@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/noise_256x256.png</file>
+        <file>assets/win11-dark.jpg</file>
+        <file>assets/win11-light.jpg</file>
+    </qresource>
+</RCC>
