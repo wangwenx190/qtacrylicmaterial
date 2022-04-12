@@ -98,7 +98,7 @@ void QuickGaussianBlurPrivate::updateDpr(const QScreen *screen)
         return;
     }
     const qreal screenDpr = screen->devicePixelRatio();
-    if (m_dpr == screenDpr) {
+    if (qFuzzyCompare(m_dpr, screenDpr)) {
         return;
     }
     m_dpr = screenDpr;
@@ -204,7 +204,7 @@ qreal QuickGaussianBlur::radius() const
 void QuickGaussianBlur::setRadius(const qreal value)
 {
     Q_D(QuickGaussianBlur);
-    if (d->m_radius == value) {
+    if (qFuzzyCompare(d->m_radius, value)) {
         return;
     }
     d->m_radius = value;
@@ -236,7 +236,7 @@ qreal QuickGaussianBlur::deviation() const
 void QuickGaussianBlur::setDeviation(const qreal value)
 {
     Q_D(QuickGaussianBlur);
-    if (d->m_deviation == value) {
+    if (qFuzzyCompare(d->m_deviation, value)) {
         return;
     }
     d->m_deviation = value;
