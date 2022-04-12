@@ -16,7 +16,7 @@ class QuickGaussianBlur : public QQuickItem
     Q_PROPERTY(qreal radius READ radius WRITE setRadius NOTIFY radiusChanged FINAL)
     Q_PROPERTY(int samples READ samples WRITE setSamples NOTIFY samplesChanged FINAL)
     Q_PROPERTY(qreal deviation READ deviation WRITE setDeviation NOTIFY deviationChanged FINAL)
-    Q_PROPERTY(bool cached READ cached WRITE setCached NOTIFY cachedChanged FINAL)
+    Q_PROPERTY(bool cached READ isCached WRITE setCached NOTIFY cachedChanged FINAL)
 
 public:
     explicit QuickGaussianBlur(QQuickItem *parent = nullptr);
@@ -34,7 +34,7 @@ public:
     [[nodiscard]] qreal deviation() const;
     void setDeviation(const qreal value);
 
-    [[nodiscard]] bool cached() const;
+    [[nodiscard]] bool isCached() const;
     void setCached(const bool value);
 
 Q_SIGNALS:

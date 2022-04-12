@@ -4,6 +4,7 @@
 #include "qgfxsourceproxy_p.h"
 #include "qgfxshaderbuilder_p.h"
 #include "quickgaussianblur.h"
+#include "quickblend.h"
 #include "quickacrylicitem.h"
 
 static constexpr const char QtAcrylicUri[] = "org.wangwenx190.QtAcrylic";
@@ -24,6 +25,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<QGfxSourceProxy>(QTACRYLIC_FULL_URI, "SourceProxy");
     qmlRegisterType<QGfxShaderBuilder>(QTACRYLIC_FULL_URI, "ShaderBuilder");
     qmlRegisterType<QuickGaussianBlur>(QTACRYLIC_FULL_URI, "GaussianBlur");
+    qmlRegisterType<QuickBlend>(QTACRYLIC_FULL_URI, "Blend");
     qmlRegisterType<QuickAcrylicItem>(QTACRYLIC_FULL_URI, "AcrylicItem");
 
     const QUrl mainWindowUrl(u"qrc:///org/wangwenx190/QtAcrylic/main.qml"_qs);

@@ -1,16 +1,18 @@
 #include "quickacrylicitem.h"
 #include "quickacrylicitem_p.h"
 #include "quickgaussianblur.h"
+#include "quickblend.h"
 #include <QtQuick/qquickwindow.h>
 #include <QtQuick/private/qquickanchors_p.h>
 #include <QtQuick/private/qquickimage_p.h>
+#include <QtQuick/private/qquickrectangle_p.h>
 
 static constexpr const QColor sc_defaultTintColor = { 255, 255, 255, 204 };
 static constexpr const qreal sc_defaultTintOpacity = 1.0;
 static constexpr const qreal sc_defaultBlurRadius = 30.0;
 static constexpr const qreal sc_defaultNoiseOpacity = 0.02;
-static constexpr const QColor sc_defaultExclusionColor = { 255, 255, 255, 26 };
-static constexpr const qreal sc_defaultSaturation = 1.25;
+//static constexpr const QColor sc_defaultExclusionColor = { 255, 255, 255, 26 };
+//static constexpr const qreal sc_defaultSaturation = 1.25;
 
 QuickAcrylicItemPrivate::QuickAcrylicItemPrivate(QuickAcrylicItem *q) : QObject(q)
 {
@@ -102,18 +104,195 @@ void QuickAcrylicItemPrivate::createBlurredSource()
     Q_Q(QuickAcrylicItem);
     m_blurredSource.reset(new QuickGaussianBlur(q));
     m_blurredSource->setRadius(sc_defaultBlurRadius);
+    // According to Qt's documentation, ideally, the samples value should be twice as large as the highest required radius value plus one.
+    // https://doc-snapshots.qt.io/qt6-dev/qml-qt5compat-graphicaleffects-gaussianblur.html#samples-prop
     m_blurredSource->setSamples(int(qRound((sc_defaultBlurRadius * 2.0) + 1.0)));
     m_blurredSource->setSource(m_backgroundImage.get());
+    m_blurredSource->setVisible(false);
     const auto blurredSourceAnchors = new QQuickAnchors(m_blurredSource.get(), m_blurredSource.get());
     blurredSourceAnchors->setFill(q);
+}
+
+void QuickAcrylicItemPrivate::createLuminosityColorEffect()
+{
+    Q_Q(QuickAcrylicItem);
+    m_luminosityColorEffect.reset(new QQuickRectangle(q));
+    QQuickPen * const border = m_luminosityColorEffect->border();
+    border->setWidth(0.0);
+    border->setColor(QColorConstants::Transparent);
+    m_luminosityColorEffect->setColor(calculateEffectiveLuminosityColor());
+    m_luminosityColorEffect->setVisible(false);
+    const auto luminosityColorEffectAnchors = new QQuickAnchors(m_luminosityColorEffect.get(), m_luminosityColorEffect.get());
+    luminosityColorEffectAnchors->setFill(q);
+}
+
+void QuickAcrylicItemPrivate::createLuminosityBlendEffect()
+{
+    Q_Q(QuickAcrylicItem);
+    m_luminosityBlendEffect.reset(new QuickBlend(q));
+    m_luminosityBlendEffect->setMode(QuickBlend::Mode::Lightness);
+    m_luminosityBlendEffect->setBackground(m_blurredSource.get());
+    m_luminosityBlendEffect->setForeground(m_luminosityColorEffect.get());
+    const auto luminosityBlendEffectAnchors = new QQuickAnchors(m_luminosityBlendEffect.get(), m_luminosityBlendEffect.get());
+    luminosityBlendEffectAnchors->setFill(q);
+}
+
+void QuickAcrylicItemPrivate::createTintColorEffect()
+{
+
+}
+
+void QuickAcrylicItemPrivate::createTintBlendEffect()
+{
+
+}
+
+void QuickAcrylicItemPrivate::createNoiseBorderEffect()
+{
+
+}
+
+void QuickAcrylicItemPrivate::createNoiseBlendEffect()
+{
+
 }
 
 void QuickAcrylicItemPrivate::initialize()
 {
     Q_Q(QuickAcrylicItem);
     q->setClip(true);
+
+    m_tintColor = sc_defaultTintColor;
+    m_tintOpacity = sc_defaultTintOpacity;
+    m_noiseOpacity = sc_defaultNoiseOpacity;
+
     createBackgroundImage();
     createBlurredSource();
+    createLuminosityColorEffect();
+    createLuminosityBlendEffect();
+    createTintColorEffect();
+    createTintBlendEffect();
+    createNoiseBorderEffect();
+    createNoiseBlendEffect();
+}
+
+qreal QuickAcrylicItemPrivate::calculateTintOpacityModifier(const QColor &tintColor) const
+{
+    // This method supresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by
+    // compressing the range of allowable values - for example, a user-defined value of 100% will be mapped to 45% for pure
+    // white (100% luminosity), 85% for pure black (0% luminosity), and 90% for pure gray (50% luminosity).  The intensity of
+    // the effect increases linearly as luminosity deviates from 50%.  After this effect is calculated, we cancel it out
+    // linearly as saturation increases from zero.
+
+    const qreal midPoint = 0.50; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
+
+    const qreal whiteMaxOpacity = 0.45; // 100% luminosity
+    const qreal midPointMaxOpacity = 0.90; // 50% luminosity
+    const qreal blackMaxOpacity = 0.85; // 0% luminosity
+
+    const QColor rgb = tintColor.toRgb();
+    const QColor hsv = rgb.toHsv();
+
+    qreal opacityModifier = midPointMaxOpacity;
+
+    if (hsv.valueF() != midPoint) {
+        // Determine maximum suppression amount
+        qreal lowestMaxOpacity = midPointMaxOpacity;
+        qreal maxDeviation = midPoint;
+
+        if (hsv.valueF() > midPoint) {
+            lowestMaxOpacity = whiteMaxOpacity; // At white (100% hsvV)
+            maxDeviation = (1.0 - maxDeviation);
+        } else if (hsv.valueF() < midPoint) {
+            lowestMaxOpacity = blackMaxOpacity; // At black (0% hsvV)
+        }
+
+        qreal maxOpacitySuppression = (midPointMaxOpacity - lowestMaxOpacity);
+
+        // Determine normalized deviation from the midpoint
+        const qreal deviation = qAbs(hsv.valueF() - midPoint);
+        const qreal normalizedDeviation = (deviation / maxDeviation);
+
+        // If we have saturation, reduce opacity suppression to allow that color to come through more
+        if (hsv.saturationF() > 0) {
+            // Dampen opacity suppression based on how much saturation there is
+            maxOpacitySuppression *= qMax((1.0 - (hsv.saturationF() * 2.0)), 0.0);
+        }
+
+        const qreal opacitySuppression = (maxOpacitySuppression * normalizedDeviation);
+
+        opacityModifier = (midPointMaxOpacity - opacitySuppression);
+    }
+
+    return opacityModifier;
+}
+
+QColor QuickAcrylicItemPrivate::calculateEffectiveTintColor() const
+{
+    QColor tintColor = m_tintColor;
+    const qreal tintOpacity = m_tintOpacity;
+
+    // Update tint color's alpha with the combined opacity value.
+    // If luminosity opacity was specified, we don't intervene into users parameters.
+    if (m_luminosityOpacity.has_value()) {
+        tintColor.setAlphaF(tintColor.alphaF() * tintOpacity);
+    } else {
+        const qreal tintOpacityModifier = calculateTintOpacityModifier(tintColor);
+        tintColor.setAlphaF(tintColor.alphaF() * tintOpacity * tintOpacityModifier);
+    }
+
+    return tintColor;
+}
+
+QColor QuickAcrylicItemPrivate::calculateEffectiveLuminosityColor() const
+{
+    QColor tintColor = m_tintColor;
+    const qreal tintOpacity = m_tintOpacity;
+
+    // Purposely leaving out tint opacity modifier here because calculateLuminosityColor() needs the *original* tint opacity set by the user.
+    tintColor.setAlphaF(tintColor.alphaF() * tintOpacity);
+
+    const std::optional<qreal> luminosityOpacity = m_luminosityOpacity;
+
+    return calculateLuminosityColor(tintColor, luminosityOpacity);
+}
+
+QColor QuickAcrylicItemPrivate::calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity) const
+{
+    // The tint color passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
+    const QColor rgbTintColor = tintColor.toRgb();
+
+    // If luminosity opacity is specified, just use the values as is
+    if (luminosityOpacity.has_value()) {
+        QColor result = rgbTintColor;
+        result.setAlphaF(qBound(0.0, luminosityOpacity.value(), 1.0));
+        return result;
+    } else {
+        // To create the Luminosity blend input color without luminosity opacity,
+        // we're taking the TintColor input, converting to HSV, and clamping the V between these values
+        const qreal minHsvV = 0.125;
+        const qreal maxHsvV = 0.965;
+
+        const QColor hsvTintColor = rgbTintColor.toHsv();
+
+        const qreal clampedHsvV = qBound(minHsvV, hsvTintColor.valueF(), maxHsvV);
+
+        const QColor hsvLuminosityColor = QColor::fromHsvF(hsvTintColor.hueF(), hsvTintColor.saturationF(), clampedHsvV);
+        const QColor rgbLuminosityColor = hsvLuminosityColor.toRgb();
+
+        // Now figure out luminosity opacity
+        // Map original *tint* opacity to this range
+        const qreal minLuminosityOpacity = 0.15;
+        const qreal maxLuminosityOpacity = 1.03;
+
+        const qreal luminosityOpacityRangeMax = (maxLuminosityOpacity - minLuminosityOpacity);
+        const qreal mappedTintOpacity = ((tintColor.alphaF() * luminosityOpacityRangeMax) + minLuminosityOpacity);
+
+        // Finally, combine the luminosity opacity and the HsvV-clamped tint color
+        QColor result = rgbLuminosityColor;
+        result.setAlphaF(qMin(mappedTintOpacity, 1.0));
+        return result;
+    }
 }
 
 QuickAcrylicItem::QuickAcrylicItem(QQuickItem *parent) : QQuickItem(parent), d_ptr(new QuickAcrylicItemPrivate(this))
@@ -121,3 +300,71 @@ QuickAcrylicItem::QuickAcrylicItem(QQuickItem *parent) : QQuickItem(parent), d_p
 }
 
 QuickAcrylicItem::~QuickAcrylicItem() = default;
+
+QColor QuickAcrylicItem::tintColor() const
+{
+    Q_D(const QuickAcrylicItem);
+    return d->m_tintColor;
+}
+
+void QuickAcrylicItem::setTintColor(const QColor &color)
+{
+    Q_ASSERT(color.isValid());
+    if (!color.isValid()) {
+        return;
+    }
+    Q_D(QuickAcrylicItem);
+    if (d->m_tintColor == color) {
+        return;
+    }
+    d->m_tintColor = color;
+    Q_EMIT tintColorChanged();
+}
+
+qreal QuickAcrylicItem::tintOpacity() const
+{
+    Q_D(const QuickAcrylicItem);
+    return d->m_tintOpacity;
+}
+
+void QuickAcrylicItem::setTintOpacity(const qreal opacity)
+{
+    Q_D(QuickAcrylicItem);
+    if (qFuzzyCompare(d->m_tintOpacity, opacity)) {
+        return;
+    }
+    d->m_tintOpacity = opacity;
+    Q_EMIT tintOpacityChanged();
+}
+
+qreal QuickAcrylicItem::luminosityOpacity() const
+{
+    Q_D(const QuickAcrylicItem);
+    return (d->m_luminosityOpacity.has_value() ? d->m_luminosityOpacity.value() : 0.0);
+}
+
+void QuickAcrylicItem::setLuminosityOpacity(const qreal opacity)
+{
+    Q_D(QuickAcrylicItem);
+    if (d->m_luminosityOpacity.has_value() && qFuzzyCompare(d->m_luminosityOpacity.value(), opacity)) {
+        return;
+    }
+    d->m_luminosityOpacity = opacity;
+    Q_EMIT luminosityOpacityChanged();
+}
+
+qreal QuickAcrylicItem::noiseOpacity() const
+{
+    Q_D(const QuickAcrylicItem);
+    return d->m_noiseOpacity;
+}
+
+void QuickAcrylicItem::setNoiseOpacity(const qreal opacity)
+{
+    Q_D(QuickAcrylicItem);
+    if (qFuzzyCompare(d->m_noiseOpacity, opacity)) {
+        return;
+    }
+    d->m_noiseOpacity = opacity;
+    Q_EMIT noiseOpacityChanged();
+}

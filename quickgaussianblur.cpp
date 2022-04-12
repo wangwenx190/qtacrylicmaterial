@@ -47,7 +47,7 @@ void QuickGaussianBlurPrivate::rebuildShaders()
     Q_Q(QuickGaussianBlur);
 
     m_samples = ((m_samples <= 0) ? 9 : m_samples);
-    m_radius = ((m_radius <= 0) ? qFloor(qreal(m_samples) / 2.0) : m_radius);
+    m_radius = ((m_radius <= 0.0) ? qFloor(qreal(m_samples) / 2.0) : m_radius);
 
     m_deviation = ((m_radius + 1.0) / 3.3333);
     m_kernelRadius = qMax(0.0, (qreal(m_samples) / 2.0));
@@ -128,6 +128,9 @@ void QuickGaussianBlurPrivate::initialize()
             updateDpr(screen);
         });
     });
+    connect(q, &QuickGaussianBlur::radiusChanged, this, &QuickGaussianBlurPrivate::rebuildShaders);
+    connect(q, &QuickGaussianBlur::samplesChanged, this, &QuickGaussianBlurPrivate::rebuildShaders);
+    connect(q, &QuickGaussianBlur::deviationChanged, this, &QuickGaussianBlurPrivate::rebuildShaders);
 
     const QRectF sourceRect = {0.0, 0.0, 0.0, 0.0};
 
@@ -158,6 +161,7 @@ void QuickGaussianBlurPrivate::initialize()
     cacheItemAnchors->setFill(m_verticalBlur.get());
     m_cacheItem->setSmooth(true);
     m_cacheItem->setSourceItem(m_verticalBlur.get());
+    m_cacheItem->setLive(true);
     m_cacheItem->setHideSource(m_cached);
     m_cacheItem->setVisible(m_cached);
 
@@ -204,7 +208,6 @@ void QuickGaussianBlur::setRadius(const qreal value)
         return;
     }
     d->m_radius = value;
-    d->rebuildShaders();
     Q_EMIT radiusChanged();
 }
 
@@ -221,7 +224,6 @@ void QuickGaussianBlur::setSamples(const int value)
         return;
     }
     d->m_samples = value;
-    d->rebuildShaders();
     Q_EMIT samplesChanged();
 }
 
@@ -238,11 +240,10 @@ void QuickGaussianBlur::setDeviation(const qreal value)
         return;
     }
     d->m_deviation = value;
-    d->rebuildShaders();
     Q_EMIT deviationChanged();
 }
 
-bool QuickGaussianBlur::cached() const
+bool QuickGaussianBlur::isCached() const
 {
     Q_D(const QuickGaussianBlur);
     return d->m_cached;

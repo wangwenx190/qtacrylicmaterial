@@ -19,6 +19,7 @@ qt_add_executable(${PROJECT_NAME}
     qtacrylic.qrc
     qgfxsourceproxy_p.h qgfxsourceproxy.cpp
     qgfxshaderbuilder_p.h qgfxshaderbuilder.cpp
+    quickblend.h quickblend_p.h quickblend.cpp
     quickgaussianblur.h quickgaussianblur_p.h quickgaussianblur.cpp
     quickacrylicitem.h quickacrylicitem_p.h quickacrylicitem.cpp
     main.cpp
@@ -57,3 +58,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::QmlPrivate
     Qt6::QuickPrivate
 )
+
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        /W3 /WX
+    )
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -Wall -Wextra -Werror
+    )
+endif()
