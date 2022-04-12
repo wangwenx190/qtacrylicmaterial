@@ -19,6 +19,9 @@ public:
     explicit QuickAcrylicItemPrivate(QuickAcrylicItem *q);
     ~QuickAcrylicItemPrivate() override;
 
+    [[nodiscard]] static QuickAcrylicItemPrivate *get(QuickAcrylicItem *pub);
+    [[nodiscard]] static const QuickAcrylicItemPrivate *get(const QuickAcrylicItem *pub);
+
 public Q_SLOTS:
     void updateBackgroundSource();
     void updateBackgroundClipRect();

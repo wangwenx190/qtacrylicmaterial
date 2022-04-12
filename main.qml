@@ -1,5 +1,5 @@
 import QtQuick
-import QtAcrylic
+import org.wangwenx190.QtAcrylic
 
 Window {
     width: 640

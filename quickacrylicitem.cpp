@@ -24,13 +24,31 @@ QuickAcrylicItemPrivate::QuickAcrylicItemPrivate(QuickAcrylicItem *q) : QObject(
 
 QuickAcrylicItemPrivate::~QuickAcrylicItemPrivate() = default;
 
+QuickAcrylicItemPrivate *QuickAcrylicItemPrivate::get(QuickAcrylicItem *pub)
+{
+    Q_ASSERT(pub);
+    if (!pub) {
+        return nullptr;
+    }
+    return pub->d_func();
+}
+
+const QuickAcrylicItemPrivate *QuickAcrylicItemPrivate::get(const QuickAcrylicItem *pub)
+{
+    Q_ASSERT(pub);
+    if (!pub) {
+        return nullptr;
+    }
+    return pub->d_func();
+}
+
 void QuickAcrylicItemPrivate::updateBackgroundSource()
 {
     Q_ASSERT(m_backgroundImage);
     if (!m_backgroundImage) {
         return;
     }
-    m_backgroundImage->setSource(QUrl(u"qrc:///assets/win11-light.jpg"_qs));
+    m_backgroundImage->setSource(QUrl(u"qrc:///org.wangwenx190.QtAcrylic/assets/win11-light.jpg"_qs));
 }
 
 void QuickAcrylicItemPrivate::updateBackgroundClipRect()
@@ -68,10 +86,11 @@ void QuickAcrylicItemPrivate::createBackgroundImage()
             disconnect(m_rootWindowYChangedConnection);
             m_rootWindowYChangedConnection = {};
         }
-        if (window) {
-            m_rootWindowXChangedConnection = connect(window, &QQuickWindow::xChanged, this, &QuickAcrylicItemPrivate::updateBackgroundClipRect);
-            m_rootWindowYChangedConnection = connect(window, &QQuickWindow::yChanged, this, &QuickAcrylicItemPrivate::updateBackgroundClipRect);
+        if (!window) {
+            return;
         }
+        m_rootWindowXChangedConnection = connect(window, &QQuickWindow::xChanged, this, &QuickAcrylicItemPrivate::updateBackgroundClipRect);
+        m_rootWindowYChangedConnection = connect(window, &QQuickWindow::yChanged, this, &QuickAcrylicItemPrivate::updateBackgroundClipRect);
     });
 
     updateBackgroundSource();
@@ -82,6 +101,8 @@ void QuickAcrylicItemPrivate::createBlurredSource()
 {
     Q_Q(QuickAcrylicItem);
     m_blurredSource.reset(new QuickGaussianBlur(q));
+    m_blurredSource->setRadius(sc_defaultBlurRadius);
+    m_blurredSource->setSamples(int(qRound((sc_defaultBlurRadius * 2.0) + 1.0)));
     m_blurredSource->setSource(m_backgroundImage.get());
     const auto blurredSourceAnchors = new QQuickAnchors(m_blurredSource.get(), m_blurredSource.get());
     blurredSourceAnchors->setFill(q);

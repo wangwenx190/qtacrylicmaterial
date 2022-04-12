@@ -3,6 +3,7 @@
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
+class QScreen;
 class QQuickItem;
 class QQuickShaderEffect;
 class QQuickShaderEffectSource;
@@ -22,9 +23,14 @@ public:
     explicit QuickGaussianBlurPrivate(QuickGaussianBlur *q);
     ~QuickGaussianBlurPrivate() override;
 
+    [[nodiscard]] static QuickGaussianBlurPrivate *get(QuickGaussianBlur *pub);
+    [[nodiscard]] static const QuickGaussianBlurPrivate *get(const QuickGaussianBlur *pub);
+
 public Q_SLOTS:
     void rebuildShaders();
-    void recalculateBlurParameters();
+
+private Q_SLOTS:
+    void updateDpr(const QScreen *screen);
 
 private:
     void initialize();
@@ -40,6 +46,9 @@ private:
     int m_kernelSize = 0;
     bool m_alphaOnly = false;
     qreal m_thickness = 0.0;
+    qreal m_dpr = 1.0;
+    QQuickItem *m_maskSource = nullptr;
+    QMetaObject::Connection m_updateDprConnection = {};
     QScopedPointer<QGfxShaderBuilder> m_shaderBuilder;
     QScopedPointer<QGfxSourceProxy> m_sourceProxy;
     QScopedPointer<QQuickShaderEffect> m_horizontalBlur;

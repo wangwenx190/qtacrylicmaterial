@@ -311,7 +311,7 @@ static inline void qgfx_declareUniforms(QByteArray &shader, const bool alphaOnly
     shader += "\nvoid main() {\n"
               "    gl_Position = qt_Matrix * qt_Vertex;\n\n"_qba;
 
-    for (int i=0; i<samples; ++i) {
+    for (int i = 0; i != samples; ++i) {
         shader += "    "_qba;
         shader += p[i].name;
         shader += " = qt_MultiTexCoord0"_qba;
@@ -336,7 +336,7 @@ static inline void qgfx_declareUniforms(QByteArray &shader, const bool alphaOnly
 
     qgfx_declareUniforms(shader, alphaOnly);
 
-    shader += "layout(binding = 1) uniform sampler2D source;"_qba;
+    shader += "layout(binding = 1) uniform sampler2D source;\n"_qba;
     shader += "layout(location = 0) out vec4 fragColor;\n"_qba;
 
     qgfx_declareBlur(shader, "in"_qba, p, samples);
@@ -377,7 +377,7 @@ static inline void qgfx_declareUniforms(QByteArray &shader, const bool alphaOnly
 [[nodiscard]] static inline QByteArray qgfx_fallbackVertexShader(const bool alphaOnly)
 {
     QByteArray vertexShader =
-           "#version 440\n"
+           "#version 440\n\n"
            "layout(location = 0) in vec4 qt_Vertex;\n"
            "layout(location = 1) in vec2 qt_MultiTexCoord0;\n\n"_qba;
 
@@ -483,6 +483,7 @@ QVariantMap QGfxShaderBuilder::gaussianBlur(const QJSValue &parameters)
 QUrl QGfxShaderBuilder::buildFragmentShader(const QByteArray &code)
 {
     m_fragmentShader.reset(new QTemporaryFile(this));
+    m_fragmentShader->setAutoRemove(false);
 
     return buildShader(code, QShader::FragmentStage, m_fragmentShader.get());
 }
@@ -490,6 +491,7 @@ QUrl QGfxShaderBuilder::buildFragmentShader(const QByteArray &code)
 QUrl QGfxShaderBuilder::buildVertexShader(const QByteArray &code)
 {
     m_vertexShader.reset(new QTemporaryFile(this));
+    m_vertexShader->setAutoRemove(false);
 
     return buildShader(code, QShader::VertexStage, m_vertexShader.get());
 }
@@ -504,18 +506,17 @@ QUrl QGfxShaderBuilder::buildShader(const QByteArray &code,
     }
 
     m_shaderBaker.setSourceString(code, stage, output->fileName());
-    {
-        const QShader compiledShader = m_shaderBaker.bake();
-        if (!compiledShader.isValid()) {
-            qWarning() << "QGfxShaderBuilder: Failed to compile shader for stage "
-                       << stage << ": "
-                       << m_shaderBaker.errorMessage()
-                       << QString::fromUtf8(code).replace(QChar(u'\n'), QChar(QChar::LineFeed));
-            return {};
-        }
-        output->write(compiledShader.serialized());
+    const QShader compiledShader = m_shaderBaker.bake();
+    if (!compiledShader.isValid()) {
+        output->close();
+        qWarning() << "QGfxShaderBuilder: Failed to compile shader for stage "
+                   << stage << ": "
+                   << m_shaderBaker.errorMessage()
+                   << QString::fromUtf8(code).replace(QChar(u'\n'), QChar(QChar::LineFeed));
+        return {};
     }
 
+    output->write(compiledShader.serialized());
     output->close();
 
     return QUrl::fromLocalFile(output->fileName());

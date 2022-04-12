@@ -6,7 +6,7 @@
 #include "quickgaussianblur.h"
 #include "quickacrylicitem.h"
 
-static constexpr const char QtAcrylicUri[] = "QtAcrylic";
+static constexpr const char QtAcrylicUri[] = "org.wangwenx190.QtAcrylic";
 
 #define QTACRYLIC_FULL_URI QtAcrylicUri, 1, 0
 
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<QuickGaussianBlur>(QTACRYLIC_FULL_URI, "GaussianBlur");
     qmlRegisterType<QuickAcrylicItem>(QTACRYLIC_FULL_URI, "AcrylicItem");
 
-    const QUrl mainWindowUrl(u"qrc:///QtAcrylic/main.qml"_qs);
+    const QUrl mainWindowUrl(u"qrc:///org/wangwenx190/QtAcrylic/main.qml"_qs);
 
     const QMetaObject::Connection connection = QObject::connect(
         &engine,
