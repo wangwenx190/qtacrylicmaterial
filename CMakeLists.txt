@@ -32,13 +32,14 @@ qt_add_qml_module(${PROJECT_NAME}
     URI ${PROJECT_URI}
     VERSION ${PROJECT_VERSION_SHORT}
     QML_FILES
-        main.qml
+        MainWindow.qml
     SOURCES
         qtacrylicmaterial.qrc
         qgfxsourceproxy_p.h qgfxsourceproxy.cpp
         qgfxshaderbuilder_p.h qgfxshaderbuilder.cpp
         quickblend.h quickblend_p.h quickblend.cpp
         quickgaussianblur.h quickgaussianblur_p.h quickgaussianblur.cpp
+        quickdesktopwallpaper.h quickdesktopwallpaper_p.h quickdesktopwallpaper.cpp
         quickacrylicmaterial.h quickacrylicmaterial_p.h quickacrylicmaterial.cpp
 )
 

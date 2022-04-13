@@ -28,6 +28,7 @@
 #include "qgfxshaderbuilder_p.h"
 #include "quickgaussianblur.h"
 #include "quickblend.h"
+#include "quickdesktopwallpaper.h"
 #include "quickacrylicmaterial.h"
 
 static constexpr const char QtAcrylicMaterialUri[] = "org.wangwenx190.QtAcrylicMaterial";
@@ -56,9 +57,10 @@ int main(int argc, char *argv[])
     qmlRegisterType<QGfxShaderBuilder>(QTACRYLICMATERIAL_FULL_URI, "ShaderBuilder");
     qmlRegisterType<QuickGaussianBlur>(QTACRYLICMATERIAL_FULL_URI, "GaussianBlur");
     qmlRegisterType<QuickBlend>(QTACRYLICMATERIAL_FULL_URI, "Blend");
+    qmlRegisterType<QuickDesktopWallpaper>(QTACRYLICMATERIAL_FULL_URI, "DesktopWallpaper");
     qmlRegisterType<QuickAcrylicMaterial>(QTACRYLICMATERIAL_FULL_URI, "AcrylicMaterial");
 
-    const QUrl mainWindowUrl(u"qrc:///org/wangwenx190/QtAcrylicMaterial/main.qml"_qs);
+    const QUrl mainWindowUrl(u"qrc:///org/wangwenx190/QtAcrylicMaterial/MainWindow.qml"_qs);
 
     const QMetaObject::Connection connection = QObject::connect(
         &engine,

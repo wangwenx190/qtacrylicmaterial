@@ -31,8 +31,15 @@ Window {
     visible: true
     title: qsTr("QtAcrylicMaterial Demo")
 
+    DesktopWallpaper {
+        id: wallpaper
+        anchors.fill: parent
+        visible: false
+    }
+
     AcrylicMaterial {
         anchors.fill: parent
+        source: wallpaper
         theme: AcrylicMaterial.Dark
     }
 }
