@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Jolla Ltd, author: <gunnar.sletta@jollamobile.com>
+** Copyright (C) 2022 Jolla Ltd, author: <gunnar.sletta@jollamobile.com>
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the Qt Graphical Effects module of the Qt Toolkit.
