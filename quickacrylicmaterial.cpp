@@ -26,7 +26,6 @@
 #include "quickacrylicmaterial_p.h"
 #include "quickgaussianblur.h"
 #include "quickblend.h"
-#include <QtQuick/qquickwindow.h>
 #include <QtQuick/private/qquickanchors_p.h>
 #include <QtQuick/private/qquickimage_p.h>
 #include <QtQuick/private/qquickrectangle_p.h>
@@ -73,67 +72,11 @@ const QuickAcrylicMaterialPrivate *QuickAcrylicMaterialPrivate::get(const QuickA
     return pub->d_func();
 }
 
-void QuickAcrylicMaterialPrivate::updateBackgroundSource()
-{
-    Q_ASSERT(m_backgroundImage);
-    if (!m_backgroundImage) {
-        return;
-    }
-    initResource();
-    m_backgroundImage->setSource(QUrl(u"qrc:///org.wangwenx190.QtAcrylicMaterial/assets/win11-light.jpg"_qs));
-}
-
-void QuickAcrylicMaterialPrivate::updateBackgroundClipRect()
-{
-    Q_ASSERT(m_backgroundImage);
-    if (!m_backgroundImage) {
-        return;
-    }
-    Q_Q(QuickAcrylicMaterial);
-    m_backgroundImage->setSourceClipRect(QRectF(q->mapToGlobal(QPointF(0.0, 0.0)), q->size()));
-}
-
 void QuickAcrylicMaterialPrivate::updateAcrylicAppearance()
 {
     m_luminosityColorEffect->setColor(calculateEffectiveLuminosityColor());
     m_tintColorEffect->setColor(calculateEffectiveTintColor());
     m_noiseBorderEffect->setOpacity(m_noiseOpacity);
-}
-
-void QuickAcrylicMaterialPrivate::createBackgroundImage()
-{
-    Q_Q(QuickAcrylicMaterial);
-    m_backgroundImage.reset(new QQuickImage(q));
-    m_backgroundImage->setClip(true);
-    m_backgroundImage->setFillMode(QQuickImage::Pad);
-    m_backgroundImage->setHorizontalAlignment(QQuickImage::AlignLeft);
-    m_backgroundImage->setVerticalAlignment(QQuickImage::AlignTop);
-    m_backgroundImage->setMipmap(true);
-    m_backgroundImage->setSmooth(true);
-    m_backgroundImage->setVisible(false);
-    const auto backgroundImageAnchors = new QQuickAnchors(m_backgroundImage.get(), m_backgroundImage.get());
-    backgroundImageAnchors->setFill(q);
-
-    connect(q, &QuickAcrylicMaterial::widthChanged, this, &QuickAcrylicMaterialPrivate::updateBackgroundClipRect);
-    connect(q, &QuickAcrylicMaterial::heightChanged, this, &QuickAcrylicMaterialPrivate::updateBackgroundClipRect);
-    connect(q, &QuickAcrylicMaterial::windowChanged, this, [this](QQuickWindow *window){
-        if (m_rootWindowXChangedConnection) {
-            disconnect(m_rootWindowXChangedConnection);
-            m_rootWindowXChangedConnection = {};
-        }
-        if (m_rootWindowYChangedConnection) {
-            disconnect(m_rootWindowYChangedConnection);
-            m_rootWindowYChangedConnection = {};
-        }
-        if (!window) {
-            return;
-        }
-        m_rootWindowXChangedConnection = connect(window, &QQuickWindow::xChanged, this, &QuickAcrylicMaterialPrivate::updateBackgroundClipRect);
-        m_rootWindowYChangedConnection = connect(window, &QQuickWindow::yChanged, this, &QuickAcrylicMaterialPrivate::updateBackgroundClipRect);
-    });
-
-    updateBackgroundSource();
-    updateBackgroundClipRect();
 }
 
 void QuickAcrylicMaterialPrivate::createBlurredSource()
@@ -144,7 +87,6 @@ void QuickAcrylicMaterialPrivate::createBlurredSource()
     // According to Qt's documentation, ideally, the samples value should be twice as large as the highest required radius value plus one.
     // https://doc-snapshots.qt.io/qt6-dev/qml-qt5compat-graphicaleffects-gaussianblur.html#samples-prop
     m_blurredSource->setSamples(int(qRound((sc_defaultBlurRadius * 2.0) + 1.0)));
-    m_blurredSource->setSource(m_backgroundImage.get());
     m_blurredSource->setVisible(false);
     const auto blurredSourceAnchors = new QQuickAnchors(m_blurredSource.get(), m_blurredSource.get());
     blurredSourceAnchors->setFill(q);
@@ -157,7 +99,6 @@ void QuickAcrylicMaterialPrivate::createLuminosityColorEffect()
     QQuickPen * const border = m_luminosityColorEffect->border();
     border->setWidth(0.0);
     border->setColor(QColorConstants::Transparent);
-    m_luminosityColorEffect->setColor(calculateEffectiveLuminosityColor());
     m_luminosityColorEffect->setVisible(false);
     const auto luminosityColorEffectAnchors = new QQuickAnchors(m_luminosityColorEffect.get(), m_luminosityColorEffect.get());
     luminosityColorEffectAnchors->setFill(q);
@@ -182,7 +123,6 @@ void QuickAcrylicMaterialPrivate::createTintColorEffect()
     QQuickPen * const border = m_tintColorEffect->border();
     border->setWidth(0.0);
     border->setColor(QColorConstants::Transparent);
-    m_tintColorEffect->setColor(calculateEffectiveTintColor());
     m_tintColorEffect->setVisible(false);
     const auto tintColorEffectAnchors = new QQuickAnchors(m_tintColorEffect.get(), m_tintColorEffect.get());
     tintColorEffectAnchors->setFill(q);
@@ -206,7 +146,6 @@ void QuickAcrylicMaterialPrivate::createNoiseBorderEffect()
     initResource();
     m_noiseBorderEffect->setSource(QUrl(u"qrc:///org.wangwenx190.QtAcrylicMaterial/assets/noise_256x256.png"_qs));
     m_noiseBorderEffect->setFillMode(QQuickImage::Tile);
-    m_noiseBorderEffect->setOpacity(m_noiseOpacity);
     const auto noiseBorderEffectAnchors = new QQuickAnchors(m_noiseBorderEffect.get(), m_noiseBorderEffect.get());
     noiseBorderEffectAnchors->setFill(q);
 }
@@ -224,13 +163,14 @@ void QuickAcrylicMaterialPrivate::initialize()
     m_tintOpacity = sc_defaultTintOpacity;
     m_noiseOpacity = sc_defaultNoiseOpacity;
 
-    createBackgroundImage();
     createBlurredSource();
     createLuminosityColorEffect();
     createLuminosityBlendEffect();
     createTintColorEffect();
     createTintBlendEffect();
     createNoiseBorderEffect();
+
+    updateAcrylicAppearance();
 }
 
 qreal QuickAcrylicMaterialPrivate::calculateTintOpacityModifier(const QColor &tintColor) const
@@ -375,6 +315,7 @@ void QuickAcrylicMaterial::setSource(QQuickItem *item)
         return;
     }
     d->m_source = item;
+    d->m_blurredSource->setSource(d->m_source);
     Q_EMIT sourceChanged();
 }
 

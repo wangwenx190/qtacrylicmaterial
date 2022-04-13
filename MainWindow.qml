@@ -40,6 +40,6 @@ Window {
     AcrylicMaterial {
         anchors.fill: parent
         source: wallpaper
-        theme: AcrylicMaterial.Dark
+        theme: AcrylicMaterial.Default
     }
 }

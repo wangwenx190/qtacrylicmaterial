@@ -52,12 +52,9 @@ public:
     [[nodiscard]] static const QuickAcrylicMaterialPrivate *get(const QuickAcrylicMaterial *pub);
 
 public Q_SLOTS:
-    void updateBackgroundSource();
-    void updateBackgroundClipRect();
     void updateAcrylicAppearance();
 
 private:
-    void createBackgroundImage();
     void createBlurredSource();
     void createLuminosityColorEffect();
     void createLuminosityBlendEffect();
@@ -79,9 +76,6 @@ private:
     std::optional<qreal> m_luminosityOpacity = std::nullopt;
     qreal m_noiseOpacity = 0.0;
     QColor m_fallbackColor = {};
-    QMetaObject::Connection m_rootWindowXChangedConnection = {};
-    QMetaObject::Connection m_rootWindowYChangedConnection = {};
-    QScopedPointer<QQuickImage> m_backgroundImage;
     QScopedPointer<QuickGaussianBlur> m_blurredSource;
     QScopedPointer<QQuickRectangle> m_luminosityColorEffect;
     QScopedPointer<QuickBlend> m_luminosityBlendEffect;

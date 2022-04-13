@@ -43,6 +43,10 @@ qt_add_qml_module(${PROJECT_NAME}
         quickacrylicmaterial.h quickacrylicmaterial_p.h quickacrylicmaterial.cpp
 )
 
+if(WIN32)
+    target_sources(${PROJECT_NAME} PRIVATE quickdesktopwallpaper_win.cpp)
+endif()
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER ${PROJECT_URI}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}

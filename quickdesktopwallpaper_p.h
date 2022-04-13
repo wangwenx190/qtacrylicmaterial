@@ -25,12 +25,11 @@
 #pragma once
 
 #include <QtCore/qobject.h>
+#include "quickdesktopwallpaper.h"
 
 QT_BEGIN_NAMESPACE
 class QQuickImage;
 QT_END_NAMESPACE
-
-class QuickDesktopWallpaper;
 
 class QuickDesktopWallpaperPrivate : public QObject
 {
@@ -39,16 +38,28 @@ class QuickDesktopWallpaperPrivate : public QObject
     Q_DISABLE_COPY_MOVE(QuickDesktopWallpaperPrivate)
 
 public:
+    using WallpaperImageAspectStyle = QuickDesktopWallpaper::WallpaperImageAspectStyle;
+
     explicit QuickDesktopWallpaperPrivate(QuickDesktopWallpaper *q);
     ~QuickDesktopWallpaperPrivate() override;
 
     [[nodiscard]] static QuickDesktopWallpaperPrivate *get(QuickDesktopWallpaper *pub);
     [[nodiscard]] static const QuickDesktopWallpaperPrivate *get(const QuickDesktopWallpaper *pub);
 
+public Q_SLOTS:
+    void updateWallpaperSource();
+    void updateWallpaperAspectStyle();
+    void updateWallpaperClipRect();
+
 private:
     void initialize();
 
 private:
     QuickDesktopWallpaper *q_ptr = nullptr;
+    QString m_wallpaperFilePath = {};
+    WallpaperImageAspectStyle m_wallpaperAspectStyle = WallpaperImageAspectStyle::KeepRatioByExpanding;
+    QRectF m_wallpaperClipRect = {};
     QScopedPointer<QQuickImage> m_wallpaperImage;
+    QMetaObject::Connection m_rootWindowXChangedConnection = {};
+    QMetaObject::Connection m_rootWindowYChangedConnection = {};
 };

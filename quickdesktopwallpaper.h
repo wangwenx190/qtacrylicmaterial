@@ -37,6 +37,16 @@ class QuickDesktopWallpaper : public QQuickItem
     Q_DISABLE_COPY_MOVE(QuickDesktopWallpaper)
 
 public:
+    enum class WallpaperImageAspectStyle
+    {
+        Central,
+        Tiled,
+        IgnoreRatio,
+        KeepRatio,
+        KeepRatioByExpanding
+    };
+    Q_ENUM(WallpaperImageAspectStyle)
+
     explicit QuickDesktopWallpaper(QQuickItem *parent = nullptr);
     ~QuickDesktopWallpaper() override;
 
