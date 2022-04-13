@@ -36,14 +36,29 @@ class QuickAcrylicMaterial : public QQuickItem
     Q_DECLARE_PRIVATE(QuickAcrylicMaterial)
     Q_DISABLE_COPY_MOVE(QuickAcrylicMaterial)
 
+    Q_PROPERTY(QQuickItem* source READ source WRITE setSource NOTIFY sourceChanged FINAL)
+    Q_PROPERTY(Theme theme READ theme WRITE setTheme NOTIFY themeChanged FINAL)
     Q_PROPERTY(QColor tintColor READ tintColor WRITE setTintColor NOTIFY tintColorChanged FINAL)
     Q_PROPERTY(qreal tintOpacity READ tintOpacity WRITE setTintOpacity NOTIFY tintOpacityChanged FINAL)
     Q_PROPERTY(qreal luminosityOpacity READ luminosityOpacity WRITE setLuminosityOpacity NOTIFY luminosityOpacityChanged FINAL)
     Q_PROPERTY(qreal noiseOpacity READ noiseOpacity WRITE setNoiseOpacity NOTIFY noiseOpacityChanged FINAL)
+    Q_PROPERTY(QColor fallbackColor READ fallbackColor WRITE setFallbackColor NOTIFY fallbackColorChanged FINAL)
 
 public:
+    enum class Theme
+    {
+        Unknown = -1, Dark, Light, HighContrast, System, Default = Dark
+    };
+    Q_ENUM(Theme)
+
     explicit QuickAcrylicMaterial(QQuickItem *parent = nullptr);
     ~QuickAcrylicMaterial() override;
+
+    [[nodiscard]] QQuickItem *source() const;
+    void setSource(QQuickItem *item);
+
+    [[nodiscard]] Theme theme() const;
+    void setTheme(const Theme value);
 
     [[nodiscard]] QColor tintColor() const;
     void setTintColor(const QColor &color);
@@ -57,11 +72,17 @@ public:
     [[nodiscard]] qreal noiseOpacity() const;
     void setNoiseOpacity(const qreal opacity);
 
+    [[nodiscard]] QColor fallbackColor() const;
+    void setFallbackColor(const QColor &color);
+
 Q_SIGNALS:
+    void sourceChanged();
+    void themeChanged();
     void tintColorChanged();
     void tintOpacityChanged();
     void luminosityOpacityChanged();
     void noiseOpacityChanged();
+    void fallbackColorChanged();
 
 private:
     QScopedPointer<QuickAcrylicMaterialPrivate> d_ptr;

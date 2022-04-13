@@ -34,8 +34,6 @@ class QQuickShaderEffectSource;
 class QQuickShaderEffect;
 QT_END_NAMESPACE
 
-class QuickBlend;
-
 class QuickBlendPrivate : public QObject
 {
     Q_OBJECT

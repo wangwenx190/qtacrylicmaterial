@@ -35,8 +35,13 @@ static constexpr const QColor sc_defaultTintColor = { 255, 255, 255, 204 };
 static constexpr const qreal sc_defaultTintOpacity = 1.0;
 static constexpr const qreal sc_defaultBlurRadius = 30.0;
 static constexpr const qreal sc_defaultNoiseOpacity = 0.02;
-//static constexpr const QColor sc_defaultExclusionColor = { 255, 255, 255, 26 };
-//static constexpr const qreal sc_defaultSaturation = 1.25;
+[[maybe_unused]] static constexpr const QColor sc_defaultExclusionColor = { 255, 255, 255, 26 };
+[[maybe_unused]] static constexpr const qreal sc_defaultSaturation = 1.25;
+
+static inline void initResource()
+{
+    Q_INIT_RESOURCE(qtacrylicmaterial);
+}
 
 QuickAcrylicMaterialPrivate::QuickAcrylicMaterialPrivate(QuickAcrylicMaterial *q) : QObject(q)
 {
@@ -74,7 +79,8 @@ void QuickAcrylicMaterialPrivate::updateBackgroundSource()
     if (!m_backgroundImage) {
         return;
     }
-    m_backgroundImage->setSource(QUrl(u"qrc:///org.wangwenx190.QtAcrylic/assets/win11-light.jpg"_qs));
+    initResource();
+    m_backgroundImage->setSource(QUrl(u"qrc:///org.wangwenx190.QtAcrylicMaterial/assets/win11-light.jpg"_qs));
 }
 
 void QuickAcrylicMaterialPrivate::updateBackgroundClipRect()
@@ -85,6 +91,13 @@ void QuickAcrylicMaterialPrivate::updateBackgroundClipRect()
     }
     Q_Q(QuickAcrylicMaterial);
     m_backgroundImage->setSourceClipRect(QRectF(q->mapToGlobal(QPointF(0.0, 0.0)), q->size()));
+}
+
+void QuickAcrylicMaterialPrivate::updateAcrylicAppearance()
+{
+    m_luminosityColorEffect->setColor(calculateEffectiveLuminosityColor());
+    m_tintColorEffect->setColor(calculateEffectiveTintColor());
+    m_noiseBorderEffect->setOpacity(m_noiseOpacity);
 }
 
 void QuickAcrylicMaterialPrivate::createBackgroundImage()
@@ -157,34 +170,55 @@ void QuickAcrylicMaterialPrivate::createLuminosityBlendEffect()
     m_luminosityBlendEffect->setMode(QuickBlend::Mode::Lightness);
     m_luminosityBlendEffect->setBackground(m_blurredSource.get());
     m_luminosityBlendEffect->setForeground(m_luminosityColorEffect.get());
+    m_luminosityBlendEffect->setVisible(false);
     const auto luminosityBlendEffectAnchors = new QQuickAnchors(m_luminosityBlendEffect.get(), m_luminosityBlendEffect.get());
     luminosityBlendEffectAnchors->setFill(q);
 }
 
 void QuickAcrylicMaterialPrivate::createTintColorEffect()
 {
-
+    Q_Q(QuickAcrylicMaterial);
+    m_tintColorEffect.reset(new QQuickRectangle(q));
+    QQuickPen * const border = m_tintColorEffect->border();
+    border->setWidth(0.0);
+    border->setColor(QColorConstants::Transparent);
+    m_tintColorEffect->setColor(calculateEffectiveTintColor());
+    m_tintColorEffect->setVisible(false);
+    const auto tintColorEffectAnchors = new QQuickAnchors(m_tintColorEffect.get(), m_tintColorEffect.get());
+    tintColorEffectAnchors->setFill(q);
 }
 
 void QuickAcrylicMaterialPrivate::createTintBlendEffect()
 {
-
+    Q_Q(QuickAcrylicMaterial);
+    m_tintBlendEffect.reset(new QuickBlend(q));
+    m_tintBlendEffect->setMode(QuickBlend::Mode::Color);
+    m_tintBlendEffect->setBackground(m_luminosityBlendEffect.get());
+    m_tintBlendEffect->setForeground(m_tintColorEffect.get());
+    const auto tintBlendEffectAnchors = new QQuickAnchors(m_tintBlendEffect.get(), m_tintBlendEffect.get());
+    tintBlendEffectAnchors->setFill(q);
 }
 
 void QuickAcrylicMaterialPrivate::createNoiseBorderEffect()
 {
-
-}
-
-void QuickAcrylicMaterialPrivate::createNoiseBlendEffect()
-{
-
+    Q_Q(QuickAcrylicMaterial);
+    m_noiseBorderEffect.reset(new QQuickImage(q));
+    initResource();
+    m_noiseBorderEffect->setSource(QUrl(u"qrc:///org.wangwenx190.QtAcrylicMaterial/assets/noise_256x256.png"_qs));
+    m_noiseBorderEffect->setFillMode(QQuickImage::Tile);
+    m_noiseBorderEffect->setOpacity(m_noiseOpacity);
+    const auto noiseBorderEffectAnchors = new QQuickAnchors(m_noiseBorderEffect.get(), m_noiseBorderEffect.get());
+    noiseBorderEffectAnchors->setFill(q);
 }
 
 void QuickAcrylicMaterialPrivate::initialize()
 {
     Q_Q(QuickAcrylicMaterial);
     q->setClip(true);
+    connect(q, &QuickAcrylicMaterial::tintColorChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
+    connect(q, &QuickAcrylicMaterial::tintOpacityChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
+    connect(q, &QuickAcrylicMaterial::luminosityOpacityChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
+    connect(q, &QuickAcrylicMaterial::noiseOpacityChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
 
     m_tintColor = sc_defaultTintColor;
     m_tintOpacity = sc_defaultTintOpacity;
@@ -197,7 +231,6 @@ void QuickAcrylicMaterialPrivate::initialize()
     createTintColorEffect();
     createTintBlendEffect();
     createNoiseBorderEffect();
-    createNoiseBlendEffect();
 }
 
 qreal QuickAcrylicMaterialPrivate::calculateTintOpacityModifier(const QColor &tintColor) const
@@ -219,7 +252,7 @@ qreal QuickAcrylicMaterialPrivate::calculateTintOpacityModifier(const QColor &ti
 
     qreal opacityModifier = midPointMaxOpacity;
 
-    if (!qFuzzyCompare(hsv.valueF(), midPoint)) {
+    if (!qFuzzyCompare(qreal(hsv.valueF()), midPoint)) {
         // Determine maximum suppression amount
         qreal lowestMaxOpacity = midPointMaxOpacity;
         qreal maxDeviation = midPoint;
@@ -325,6 +358,64 @@ QuickAcrylicMaterial::QuickAcrylicMaterial(QQuickItem *parent) : QQuickItem(pare
 
 QuickAcrylicMaterial::~QuickAcrylicMaterial() = default;
 
+QQuickItem *QuickAcrylicMaterial::source() const
+{
+    Q_D(const QuickAcrylicMaterial);
+    return d->m_source;
+}
+
+void QuickAcrylicMaterial::setSource(QQuickItem *item)
+{
+    Q_ASSERT(item);
+    if (!item) {
+        return;
+    }
+    Q_D(QuickAcrylicMaterial);
+    if (d->m_source == item) {
+        return;
+    }
+    d->m_source = item;
+    Q_EMIT sourceChanged();
+}
+
+QuickAcrylicMaterial::Theme QuickAcrylicMaterial::theme() const
+{
+    Q_D(const QuickAcrylicMaterial);
+    return d->m_theme;
+}
+
+void QuickAcrylicMaterial::setTheme(const Theme value)
+{
+    Q_D(QuickAcrylicMaterial);
+    if (d->m_theme == value) {
+        return;
+    }
+    d->m_theme = value;
+    Q_EMIT themeChanged();
+    switch (d->m_theme) {
+    case Theme::Dark: {
+        setTintColor(u"#2C2C2C"_qs);
+        setTintOpacity(0.15);
+        setLuminosityOpacity(0.96);
+        setFallbackColor(u"#2C2C2C"_qs);
+    } break;
+    case Theme::Light: {
+        setTintColor(u"#FCFCFC"_qs);
+        setTintOpacity(0.0);
+        setLuminosityOpacity(0.85);
+        setFallbackColor(u"#F9F9F9"_qs);
+    } break;
+    case Theme::HighContrast: {
+        // ### TODO
+    } break;
+    case Theme::System: {
+        // ### TODO
+    } break;
+    default:
+        break;
+    }
+}
+
 QColor QuickAcrylicMaterial::tintColor() const
 {
     Q_D(const QuickAcrylicMaterial);
@@ -391,4 +482,24 @@ void QuickAcrylicMaterial::setNoiseOpacity(const qreal opacity)
     }
     d->m_noiseOpacity = opacity;
     Q_EMIT noiseOpacityChanged();
+}
+
+QColor QuickAcrylicMaterial::fallbackColor() const
+{
+    Q_D(const QuickAcrylicMaterial);
+    return d->m_fallbackColor;
+}
+
+void QuickAcrylicMaterial::setFallbackColor(const QColor &color)
+{
+    Q_ASSERT(color.isValid());
+    if (!color.isValid()) {
+        return;
+    }
+    Q_D(QuickAcrylicMaterial);
+    if (d->m_fallbackColor == color) {
+        return;
+    }
+    d->m_fallbackColor = color;
+    Q_EMIT fallbackColorChanged();
 }

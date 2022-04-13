@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(QtAcrylic VERSION 1.0.0.0 LANGUAGES CXX)
+project(QtAcrylicMaterial VERSION 1.0.0.0 LANGUAGES CXX)
 
 set(PROJECT_VERSION_SHORT ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
 set(PROJECT_VENDOR wangwenx190)
@@ -34,12 +34,12 @@ qt_add_qml_module(${PROJECT_NAME}
     QML_FILES
         main.qml
     SOURCES
-        qtacrylic.qrc
+        qtacrylicmaterial.qrc
         qgfxsourceproxy_p.h qgfxsourceproxy.cpp
         qgfxshaderbuilder_p.h qgfxshaderbuilder.cpp
         quickblend.h quickblend_p.h quickblend.cpp
         quickgaussianblur.h quickgaussianblur_p.h quickgaussianblur.cpp
-        quickacrylicitem.h quickacrylicitem_p.h quickacrylicitem.cpp
+        quickacrylicmaterial.h quickacrylicmaterial_p.h quickacrylicmaterial.cpp
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

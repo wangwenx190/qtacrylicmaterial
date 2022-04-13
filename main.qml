@@ -33,5 +33,6 @@ Window {
 
     AcrylicMaterial {
         anchors.fill: parent
+        theme: AcrylicMaterial.Dark
     }
 }

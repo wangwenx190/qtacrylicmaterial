@@ -26,13 +26,13 @@
 
 #include <QtCore/qobject.h>
 #include <QtGui/qcolor.h>
+#include "quickacrylicmaterial.h"
 
 QT_BEGIN_NAMESPACE
 class QQuickImage;
 class QQuickRectangle;
 QT_END_NAMESPACE
 
-class QuickAcrylicMaterial;
 class QuickGaussianBlur;
 class QuickBlend;
 
@@ -43,6 +43,8 @@ class QuickAcrylicMaterialPrivate : public QObject
     Q_DISABLE_COPY_MOVE(QuickAcrylicMaterialPrivate)
 
 public:
+    using Theme = QuickAcrylicMaterial::Theme;
+
     explicit QuickAcrylicMaterialPrivate(QuickAcrylicMaterial *q);
     ~QuickAcrylicMaterialPrivate() override;
 
@@ -52,6 +54,7 @@ public:
 public Q_SLOTS:
     void updateBackgroundSource();
     void updateBackgroundClipRect();
+    void updateAcrylicAppearance();
 
 private:
     void createBackgroundImage();
@@ -61,7 +64,6 @@ private:
     void createTintColorEffect();
     void createTintBlendEffect();
     void createNoiseBorderEffect();
-    void createNoiseBlendEffect();
     void initialize();
     [[nodiscard]] qreal calculateTintOpacityModifier(const QColor &tintColor) const;
     [[nodiscard]] QColor calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity) const;
@@ -70,10 +72,13 @@ private:
 
 private:
     QuickAcrylicMaterial *q_ptr = nullptr;
+    QQuickItem *m_source = nullptr;
+    Theme m_theme = Theme::Unknown;
     QColor m_tintColor = {};
     qreal m_tintOpacity = 0.0;
     std::optional<qreal> m_luminosityOpacity = std::nullopt;
     qreal m_noiseOpacity = 0.0;
+    QColor m_fallbackColor = {};
     QMetaObject::Connection m_rootWindowXChangedConnection = {};
     QMetaObject::Connection m_rootWindowYChangedConnection = {};
     QScopedPointer<QQuickImage> m_backgroundImage;
@@ -83,5 +88,4 @@ private:
     QScopedPointer<QQuickRectangle> m_tintColorEffect;
     QScopedPointer<QuickBlend> m_tintBlendEffect;
     QScopedPointer<QQuickImage> m_noiseBorderEffect;
-    QScopedPointer<QuickBlend> m_noiseBlendEffect;
 };
