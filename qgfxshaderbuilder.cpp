@@ -315,7 +315,7 @@ static inline void qgfx_declareUniforms(QByteArray &shader, const bool alphaOnly
         shader += "    "_qba;
         shader += p[i].name;
         shader += " = qt_MultiTexCoord0"_qba;
-        if (p[i].pos != 0.0) {
+        if (!qFuzzyCompare(p[i].pos, 0.0)) {
             shader += " + spread * dirstep * float("_qba;
             shader += QByteArray::number(p[i].pos);
             shader += ")"_qba;
@@ -521,4 +521,3 @@ QUrl QGfxShaderBuilder::buildShader(const QByteArray &code,
 
     return QUrl::fromLocalFile(output->fileName());
 }
-

@@ -195,7 +195,7 @@ qreal QuickAcrylicItemPrivate::calculateTintOpacityModifier(const QColor &tintCo
 
     qreal opacityModifier = midPointMaxOpacity;
 
-    if (hsv.valueF() != midPoint) {
+    if (!qFuzzyCompare(hsv.valueF(), midPoint)) {
         // Determine maximum suppression amount
         qreal lowestMaxOpacity = midPointMaxOpacity;
         qreal maxDeviation = midPoint;
