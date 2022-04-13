@@ -27,14 +27,14 @@
 #include <QtQml/qqmlregistration.h>
 #include <QtQuick/qquickitem.h>
 
-class QuickAcrylicItemPrivate;
+class QuickAcrylicMaterialPrivate;
 
-class QuickAcrylicItem : public QQuickItem
+class QuickAcrylicMaterial : public QQuickItem
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(AcrylicItem)
-    Q_DECLARE_PRIVATE(QuickAcrylicItem)
-    Q_DISABLE_COPY_MOVE(QuickAcrylicItem)
+    QML_NAMED_ELEMENT(AcrylicMaterial)
+    Q_DECLARE_PRIVATE(QuickAcrylicMaterial)
+    Q_DISABLE_COPY_MOVE(QuickAcrylicMaterial)
 
     Q_PROPERTY(QColor tintColor READ tintColor WRITE setTintColor NOTIFY tintColorChanged FINAL)
     Q_PROPERTY(qreal tintOpacity READ tintOpacity WRITE setTintOpacity NOTIFY tintOpacityChanged FINAL)
@@ -42,8 +42,8 @@ class QuickAcrylicItem : public QQuickItem
     Q_PROPERTY(qreal noiseOpacity READ noiseOpacity WRITE setNoiseOpacity NOTIFY noiseOpacityChanged FINAL)
 
 public:
-    explicit QuickAcrylicItem(QQuickItem *parent = nullptr);
-    ~QuickAcrylicItem() override;
+    explicit QuickAcrylicMaterial(QQuickItem *parent = nullptr);
+    ~QuickAcrylicMaterial() override;
 
     [[nodiscard]] QColor tintColor() const;
     void setTintColor(const QColor &color);
@@ -64,7 +64,7 @@ Q_SIGNALS:
     void noiseOpacityChanged();
 
 private:
-    QScopedPointer<QuickAcrylicItemPrivate> d_ptr;
+    QScopedPointer<QuickAcrylicMaterialPrivate> d_ptr;
 };
 
-QML_DECLARE_TYPE(QuickAcrylicItem)
+QML_DECLARE_TYPE(QuickAcrylicMaterial)

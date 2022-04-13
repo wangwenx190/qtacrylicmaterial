@@ -32,22 +32,22 @@ class QQuickImage;
 class QQuickRectangle;
 QT_END_NAMESPACE
 
-class QuickAcrylicItem;
+class QuickAcrylicMaterial;
 class QuickGaussianBlur;
 class QuickBlend;
 
-class QuickAcrylicItemPrivate : public QObject
+class QuickAcrylicMaterialPrivate : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PUBLIC(QuickAcrylicItem)
-    Q_DISABLE_COPY_MOVE(QuickAcrylicItemPrivate)
+    Q_DECLARE_PUBLIC(QuickAcrylicMaterial)
+    Q_DISABLE_COPY_MOVE(QuickAcrylicMaterialPrivate)
 
 public:
-    explicit QuickAcrylicItemPrivate(QuickAcrylicItem *q);
-    ~QuickAcrylicItemPrivate() override;
+    explicit QuickAcrylicMaterialPrivate(QuickAcrylicMaterial *q);
+    ~QuickAcrylicMaterialPrivate() override;
 
-    [[nodiscard]] static QuickAcrylicItemPrivate *get(QuickAcrylicItem *pub);
-    [[nodiscard]] static const QuickAcrylicItemPrivate *get(const QuickAcrylicItem *pub);
+    [[nodiscard]] static QuickAcrylicMaterialPrivate *get(QuickAcrylicMaterial *pub);
+    [[nodiscard]] static const QuickAcrylicMaterialPrivate *get(const QuickAcrylicMaterial *pub);
 
 public Q_SLOTS:
     void updateBackgroundSource();
@@ -69,7 +69,7 @@ private:
     [[nodiscard]] QColor calculateEffectiveLuminosityColor() const;
 
 private:
-    QuickAcrylicItem *q_ptr = nullptr;
+    QuickAcrylicMaterial *q_ptr = nullptr;
     QColor m_tintColor = {};
     qreal m_tintOpacity = 0.0;
     std::optional<qreal> m_luminosityOpacity = std::nullopt;

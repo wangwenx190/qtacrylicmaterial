@@ -23,15 +23,15 @@
  */
 
 import QtQuick
-import org.wangwenx190.QtAcrylic
+import org.wangwenx190.QtAcrylicMaterial
 
 Window {
     width: 640
     height: 480
     visible: true
-    title: qsTr("Hello World")
+    title: qsTr("QtAcrylicMaterial Demo")
 
-    AcrylicItem {
+    AcrylicMaterial {
         anchors.fill: parent
     }
 }

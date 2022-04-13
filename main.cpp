@@ -29,11 +29,11 @@
 #include "qgfxshaderbuilder_p.h"
 #include "quickgaussianblur.h"
 #include "quickblend.h"
-#include "quickacrylicitem.h"
+#include "quickacrylicmaterial.h"
 
-static constexpr const char QtAcrylicUri[] = "org.wangwenx190.QtAcrylic";
+static constexpr const char QtAcrylicMaterialUri[] = "org.wangwenx190.QtAcrylicMaterial";
 
-#define QTACRYLIC_FULL_URI QtAcrylicUri, 1, 0
+#define QTACRYLICMATERIAL_FULL_URI QtAcrylicMaterialUri, 1, 0
 
 int main(int argc, char *argv[])
 {
@@ -45,12 +45,12 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    qmlRegisterModule(QTACRYLIC_FULL_URI);
-    qmlRegisterType<QGfxSourceProxy>(QTACRYLIC_FULL_URI, "SourceProxy");
-    qmlRegisterType<QGfxShaderBuilder>(QTACRYLIC_FULL_URI, "ShaderBuilder");
-    qmlRegisterType<QuickGaussianBlur>(QTACRYLIC_FULL_URI, "GaussianBlur");
-    qmlRegisterType<QuickBlend>(QTACRYLIC_FULL_URI, "Blend");
-    qmlRegisterType<QuickAcrylicItem>(QTACRYLIC_FULL_URI, "AcrylicItem");
+    qmlRegisterModule(QTACRYLICMATERIAL_FULL_URI);
+    qmlRegisterType<QGfxSourceProxy>(QTACRYLICMATERIAL_FULL_URI, "SourceProxy");
+    qmlRegisterType<QGfxShaderBuilder>(QTACRYLICMATERIAL_FULL_URI, "ShaderBuilder");
+    qmlRegisterType<QuickGaussianBlur>(QTACRYLICMATERIAL_FULL_URI, "GaussianBlur");
+    qmlRegisterType<QuickBlend>(QTACRYLICMATERIAL_FULL_URI, "Blend");
+    qmlRegisterType<QuickAcrylicMaterial>(QTACRYLICMATERIAL_FULL_URI, "AcrylicMaterial");
 
     const QUrl mainWindowUrl(u"qrc:///org/wangwenx190/QtAcrylic/main.qml"_qs);
 
