@@ -13,22 +13,33 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Qt6 6.3 COMPONENTS ShaderTools Qml Quick REQUIRED)
+find_package(Qt6 6.3 REQUIRED COMPONENTS
+    ShaderTools Qml Quick
+)
 
 qt_add_executable(${PROJECT_NAME}
-    qtacrylic.qrc
-    qgfxsourceproxy_p.h qgfxsourceproxy.cpp
-    qgfxshaderbuilder_p.h qgfxshaderbuilder.cpp
-    quickblend.h quickblend_p.h quickblend.cpp
-    quickgaussianblur.h quickgaussianblur_p.h quickgaussianblur.cpp
-    quickacrylicitem.h quickacrylicitem_p.h quickacrylicitem.cpp
     main.cpp
 )
+
+if(WIN32)
+    enable_language(RC)
+    target_sources(${PROJECT_NAME} PRIVATE
+        app.rc app.manifest
+    )
+endif()
 
 qt_add_qml_module(${PROJECT_NAME}
     URI ${PROJECT_URI}
     VERSION ${PROJECT_VERSION_SHORT}
-    QML_FILES main.qml
+    QML_FILES
+        main.qml
+    SOURCES
+        qtacrylic.qrc
+        qgfxsourceproxy_p.h qgfxsourceproxy.cpp
+        qgfxshaderbuilder_p.h qgfxshaderbuilder.cpp
+        quickblend.h quickblend_p.h quickblend.cpp
+        quickgaussianblur.h quickgaussianblur_p.h quickgaussianblur.cpp
+        quickacrylicitem.h quickacrylicitem_p.h quickacrylicitem.cpp
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -61,7 +72,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
-        /W3 /WX
+        /utf-8 /W3 /WX
     )
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE
