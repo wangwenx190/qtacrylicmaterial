@@ -57,7 +57,7 @@ target_link_libraries(${PROJECT_TARGET} PRIVATE
 
 if(MSVC)
     target_compile_options(${PROJECT_TARGET} PRIVATE
-        /utf-8 /W3 /WX
+        /utf-8 /W4 /WX
     )
 else()
     target_compile_options(${PROJECT_TARGET} PRIVATE
