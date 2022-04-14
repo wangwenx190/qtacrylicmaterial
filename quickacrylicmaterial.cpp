@@ -84,9 +84,7 @@ void QuickAcrylicMaterialPrivate::createBlurredSource()
     Q_Q(QuickAcrylicMaterial);
     m_blurredSource.reset(new QuickGaussianBlur(q));
     m_blurredSource->setRadius(sc_defaultBlurRadius);
-    // According to Qt's documentation, ideally, the samples value should be twice as large as the highest required radius value plus one.
-    // https://doc-snapshots.qt.io/qt6-dev/qml-qt5compat-graphicaleffects-gaussianblur.html#samples-prop
-    m_blurredSource->setSamples(int(qRound((sc_defaultBlurRadius * 2.0) + 1.0)));
+    m_blurredSource->setSamples(int(qRound(sc_defaultBlurRadius * 2.0)));
     m_blurredSource->setVisible(false);
     const auto blurredSourceAnchors = new QQuickAnchors(m_blurredSource.get(), m_blurredSource.get());
     blurredSourceAnchors->setFill(q);
@@ -335,16 +333,16 @@ void QuickAcrylicMaterial::setTheme(const Theme value)
     Q_EMIT themeChanged();
     switch (d->m_theme) {
     case Theme::Dark: {
-        setTintColor(u"#2C2C2C"_qs);
+        setTintColor(QColor(u"#2C2C2C"_qs));
         setTintOpacity(0.15);
         setLuminosityOpacity(0.96);
-        setFallbackColor(u"#2C2C2C"_qs);
+        setFallbackColor(QColor(u"#2C2C2C"_qs));
     } break;
     case Theme::Light: {
-        setTintColor(u"#FCFCFC"_qs);
+        setTintColor(QColor(u"#FCFCFC"_qs));
         setTintOpacity(0.0);
         setLuminosityOpacity(0.85);
-        setFallbackColor(u"#F9F9F9"_qs);
+        setFallbackColor(QColor(u"#F9F9F9"_qs));
     } break;
     case Theme::HighContrast: {
         // ### TODO

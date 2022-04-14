@@ -127,6 +127,8 @@ void QuickDesktopWallpaperPrivate::initialize()
     const auto wallpaperImageAnchors = new QQuickAnchors(m_wallpaperImage.get(), m_wallpaperImage.get());
     wallpaperImageAnchors->setFill(q);
 
+    connect(q, &QuickDesktopWallpaper::xChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
+    connect(q, &QuickDesktopWallpaper::yChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
     connect(q, &QuickDesktopWallpaper::widthChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
     connect(q, &QuickDesktopWallpaper::heightChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
     connect(q, &QuickDesktopWallpaper::windowChanged, this, [this](QQuickWindow *window){

@@ -36,6 +36,14 @@
 #include <QtQuick/private/qquickanchors_p.h>
 #include <QtQuick/private/qquickitem_p.h>
 
+static constexpr const char kSource[] = "source";
+static constexpr const char kSpread[] = "spread";
+static constexpr const char kDirstep[] = "dirstep";
+static constexpr const char kDeviation[] = "deviation";
+static constexpr const char kColor[] = "color";
+static constexpr const char kThickness[] = "thickness";
+static constexpr const char kMask[] = "mask";
+
 QuickGaussianBlurPrivate::QuickGaussianBlurPrivate(QuickGaussianBlur *q) : QObject(q)
 {
     Q_ASSERT(q);
@@ -82,27 +90,26 @@ void QuickGaussianBlurPrivate::rebuildShaders()
     const QVariant thicknessVar = qMax(0.0, qMin(0.98, (1.0 - (m_thickness * 0.98))));
     const QVariant maskVar = QVariant::fromValue(m_maskSource);
 
-    m_horizontalBlur->setProperty("source", QVariant::fromValue(m_sourceProxy->output()));
-    m_horizontalBlur->setProperty("spread", spreadVar);
-    m_horizontalBlur->setProperty("dirstep", QVector2D((1.0 / (q->width() * m_dpr)), 0.0));
-    m_horizontalBlur->setProperty("deviation", deviationVar);
-    m_horizontalBlur->setProperty("color", QColorConstants::White);
-    m_horizontalBlur->setProperty("thickness", thicknessVar);
-    m_horizontalBlur->setProperty("mask", maskVar);
+    m_horizontalBlur->setProperty(kSource, QVariant::fromValue(m_sourceProxy->output()));
+    m_horizontalBlur->setProperty(kSpread, spreadVar);
+    m_horizontalBlur->setProperty(kDirstep, QVector2D((1.0 / (q->width() * m_dpr)), 0.0));
+    m_horizontalBlur->setProperty(kDeviation, deviationVar);
+    m_horizontalBlur->setProperty(kColor, QColorConstants::White);
+    m_horizontalBlur->setProperty(kThickness, thicknessVar);
+    m_horizontalBlur->setProperty(kMask, maskVar);
 
-    m_verticalBlur->setProperty("source", QVariant::fromValue(m_horizontalBlur.get()));
-    m_verticalBlur->setProperty("spread", spreadVar);
-    m_verticalBlur->setProperty("dirstep", QVector2D(0.0, (1.0 / (q->height() * m_dpr))));
-    m_verticalBlur->setProperty("deviation", deviationVar);
-    m_verticalBlur->setProperty("color", QColorConstants::Black);
-    m_verticalBlur->setProperty("thickness", thicknessVar);
-    m_verticalBlur->setProperty("mask", maskVar);
+    m_verticalBlur->setProperty(kSource, QVariant::fromValue(m_horizontalBlur.get()));
+    m_verticalBlur->setProperty(kSpread, spreadVar);
+    m_verticalBlur->setProperty(kDirstep, QVector2D(0.0, (1.0 / (q->height() * m_dpr))));
+    m_verticalBlur->setProperty(kDeviation, deviationVar);
+    m_verticalBlur->setProperty(kColor, QColorConstants::Black);
+    m_verticalBlur->setProperty(kThickness, thicknessVar);
+    m_verticalBlur->setProperty(kMask, maskVar);
 
     QQmlEngine engine(this);
     QJSValue params = engine.newObject();
     params.setProperty(u"radius"_qs, m_kernelRadius);
-    // Limit deviation to something very small avoid getting NaN in the shader.
-    params.setProperty(u"deviation"_qs, qMax(0.00001, m_deviation));
+    params.setProperty(u"deviation"_qs, m_deviation);
     params.setProperty(u"alphaOnly"_qs, m_alphaOnly);
     params.setProperty(u"masked"_qs, (m_maskSource != nullptr));
     params.setProperty(u"fallback"_qs, !qFuzzyCompare(m_radius, m_kernelRadius));

@@ -118,7 +118,7 @@ void QGfxSourceProxy::repolish()
     polish();
 }
 
-QObject *QGfxSourceProxy::findLayer(QQuickItem *item)
+QQuickItemLayer *QGfxSourceProxy::findLayer(QQuickItem *item)
 {
     Q_ASSERT(item);
     if (!item) {
@@ -129,11 +129,9 @@ QObject *QGfxSourceProxy::findLayer(QQuickItem *item)
     if (!d) {
         return nullptr;
     }
-    if (d->extra.isAllocated() && d->extra->layer) {
-        const auto layer = qvariant_cast<QObject *>(item->property("layer"));
-        if (layer && layer->property("enabled").toBool()) {
-            return layer;
-        }
+    QQuickItemLayer *layer = d->layer();
+    if (layer && layer->enabled()) {
+        return layer;
     }
     return nullptr;
 }
@@ -155,7 +153,7 @@ void QGfxSourceProxy::updatePolish()
     // Layers can be used in two different ways. Option 1 is when the item is
     // used as input to a separate ShaderEffect component. In this case,
     // m_input will be the item itself.
-    QObject *layer = findLayer(m_input);
+    QQuickItemLayer *layer = findLayer(m_input);
     if (!layer && shaderSource) {
         // Alternatively, the effect is applied via layer.effect, and the
         // input to the effect will be the layer's internal ShaderEffectSource
