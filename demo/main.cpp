@@ -24,18 +24,6 @@
 
 #include <QtGui/qguiapplication.h>
 #include <QtQml/qqmlapplicationengine.h>
-#include "qgfxsourceproxy_p.h"
-#include "qgfxshaderbuilder_p.h"
-#include "quickgaussianblur.h"
-#include "quickblend.h"
-#include "quickdesktopwallpaper.h"
-#include "quickacrylicmaterial.h"
-
-static constexpr const char QtAcrylicMaterialUri[] = "org.wangwenx190.QtAcrylicMaterial";
-
-#ifndef QTACRYLICMATERIAL_FULL_URI
-#  define QTACRYLICMATERIAL_FULL_URI QtAcrylicMaterialUri, 1, 0
-#endif
 
 int main(int argc, char *argv[])
 {
@@ -45,22 +33,14 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(u"wangwenx190"_qs);
     QCoreApplication::setOrganizationDomain(u"wangwenx190.github.io"_qs);
 
-    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
 
     QGuiApplication application(argc, argv);
 
     QQmlApplicationEngine engine;
+    engine.addImportPath(QCoreApplication::applicationDirPath() + u"/../imports");
 
-    qmlRegisterModule(QTACRYLICMATERIAL_FULL_URI);
-    qmlRegisterType<QGfxSourceProxy>(QTACRYLICMATERIAL_FULL_URI, "SourceProxy");
-    qmlRegisterType<QGfxShaderBuilder>(QTACRYLICMATERIAL_FULL_URI, "ShaderBuilder");
-    qmlRegisterType<QuickGaussianBlur>(QTACRYLICMATERIAL_FULL_URI, "GaussianBlur");
-    qmlRegisterType<QuickBlend>(QTACRYLICMATERIAL_FULL_URI, "Blend");
-    qmlRegisterType<QuickDesktopWallpaper>(QTACRYLICMATERIAL_FULL_URI, "DesktopWallpaper");
-    qmlRegisterType<QuickAcrylicMaterial>(QTACRYLICMATERIAL_FULL_URI, "AcrylicMaterial");
-
-    const QUrl mainWindowUrl(u"qrc:///org/wangwenx190/QtAcrylicMaterial/MainWindow.qml"_qs);
+    const QUrl mainWindowUrl(u"qrc:///Demo/MainWindow.qml"_qs);
 
     const QMetaObject::Connection connection = QObject::connect(
         &engine,

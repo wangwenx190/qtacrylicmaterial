@@ -1,3 +1,3 @@
-# qtacrylic
+# QtAcrylicMaterial
 
-![Acrylic](./acrylic-recipe-diagram.png)
+![MSAcrylicMaterial](./doc/acrylic-recipe-diagram.png)

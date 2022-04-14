@@ -39,7 +39,7 @@ static constexpr const qreal sc_defaultNoiseOpacity = 0.02;
 
 static inline void initResource()
 {
-    Q_INIT_RESOURCE(qtacrylicmaterial);
+    //Q_INIT_RESOURCE(qtacrylicmaterial);
 }
 
 QuickAcrylicMaterialPrivate::QuickAcrylicMaterialPrivate(QuickAcrylicMaterial *q) : QObject(q)
@@ -142,7 +142,7 @@ void QuickAcrylicMaterialPrivate::createNoiseBorderEffect()
     Q_Q(QuickAcrylicMaterial);
     m_noiseBorderEffect.reset(new QQuickImage(q));
     initResource();
-    m_noiseBorderEffect->setSource(QUrl(u"qrc:///org.wangwenx190.QtAcrylicMaterial/assets/noise_256x256.png"_qs));
+    m_noiseBorderEffect->setSource(QUrl(u"qrc:///org/wangwenx190/QtAcrylicMaterial/assets/noise_256x256.png"_qs));
     m_noiseBorderEffect->setFillMode(QQuickImage::Tile);
     const auto noiseBorderEffectAnchors = new QQuickAnchors(m_noiseBorderEffect.get(), m_noiseBorderEffect.get());
     noiseBorderEffectAnchors->setFill(q);
