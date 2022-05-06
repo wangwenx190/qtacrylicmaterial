@@ -485,7 +485,7 @@ QVariantMap QGfxShaderBuilder::gaussianBlur(const QJSValue &parameters)
 QUrl QGfxShaderBuilder::buildFragmentShader(const QByteArray &code)
 {
     m_fragmentShader.reset(new QTemporaryFile(this));
-    m_fragmentShader->setAutoRemove(false); // We need a permenent file, so disable automatic deletion.
+    m_fragmentShader->setAutoRemove(false); // We need a permanent file, so disable automatic deletion.
 
     return buildShader(code, QShader::FragmentStage, m_fragmentShader.get());
 }
@@ -493,7 +493,7 @@ QUrl QGfxShaderBuilder::buildFragmentShader(const QByteArray &code)
 QUrl QGfxShaderBuilder::buildVertexShader(const QByteArray &code)
 {
     m_vertexShader.reset(new QTemporaryFile(this));
-    m_vertexShader->setAutoRemove(false); // We need a permenent file, so disable automatic deletion.
+    m_vertexShader->setAutoRemove(false); // We need a permanent file, so disable automatic deletion.
 
     return buildShader(code, QShader::VertexStage, m_vertexShader.get());
 }
