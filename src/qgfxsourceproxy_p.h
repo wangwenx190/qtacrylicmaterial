@@ -99,7 +99,7 @@ private Q_SLOTS:
 private:
     void setOutput(QQuickItem *output);
     void useProxy();
-    [[nodiscard]] static QQuickItemLayer *findLayer(QQuickItem *item);
+    [[nodiscard]] static QObject *findLayer(QQuickItem *item);
 
 private:
     QRectF m_sourceRect = {};

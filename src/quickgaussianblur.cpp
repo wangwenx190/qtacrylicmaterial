@@ -109,7 +109,8 @@ void QuickGaussianBlurPrivate::rebuildShaders()
     QQmlEngine engine(this);
     QJSValue params = engine.newObject();
     params.setProperty(u"radius"_qs, m_kernelRadius);
-    params.setProperty(u"deviation"_qs, m_deviation);
+    // Limit deviation to something very small avoid getting NaN in the shader.
+    params.setProperty(u"deviation"_qs, qMax(0.00001, m_deviation));
     params.setProperty(u"alphaOnly"_qs, m_alphaOnly);
     params.setProperty(u"masked"_qs, (m_maskSource != nullptr));
     params.setProperty(u"fallback"_qs, !qFuzzyCompare(m_radius, m_kernelRadius));
@@ -122,17 +123,12 @@ void QuickGaussianBlurPrivate::rebuildShaders()
     m_verticalBlur->setVertexShader(vertexShaderUrl);
 }
 
-void QuickGaussianBlurPrivate::updateDpr(const QScreen *screen)
+void QuickGaussianBlurPrivate::updateDpr(const qreal newDpr)
 {
-    Q_ASSERT(screen);
-    if (!screen) {
+    if (qFuzzyCompare(m_dpr, newDpr)) {
         return;
     }
-    const qreal screenDpr = screen->devicePixelRatio();
-    if (qFuzzyCompare(m_dpr, screenDpr)) {
-        return;
-    }
-    m_dpr = screenDpr;
+    m_dpr = newDpr;
     rebuildShaders();
 }
 
@@ -141,24 +137,6 @@ void QuickGaussianBlurPrivate::initialize()
     Q_Q(QuickGaussianBlur);
     connect(q, &QuickGaussianBlur::widthChanged, this, &QuickGaussianBlurPrivate::rebuildShaders);
     connect(q, &QuickGaussianBlur::heightChanged, this, &QuickGaussianBlurPrivate::rebuildShaders);
-    connect(q, &QuickGaussianBlur::windowChanged, this, [this](QQuickWindow *window){
-        if (m_updateDprConnection) {
-            disconnect(m_updateDprConnection);
-            m_updateDprConnection = {};
-        }
-        if (!window) {
-            return;
-        }
-        if (window->screen()) {
-            updateDpr(window->screen());
-        }
-        m_updateDprConnection = connect(window, &QQuickWindow::screenChanged, this, [this](QScreen *screen){
-            if (!screen) {
-                return;
-            }
-            updateDpr(screen);
-        });
-    });
     connect(q, &QuickGaussianBlur::radiusChanged, this, &QuickGaussianBlurPrivate::rebuildShaders);
     connect(q, &QuickGaussianBlur::samplesChanged, this, &QuickGaussianBlurPrivate::rebuildShaders);
     connect(q, &QuickGaussianBlur::deviationChanged, this, &QuickGaussianBlurPrivate::rebuildShaders);
@@ -290,4 +268,13 @@ void QuickGaussianBlur::setCached(const bool value)
     d->m_cacheItem->setHideSource(d->m_cached);
     d->m_cacheItem->setVisible(d->m_cached);
     Q_EMIT cachedChanged();
+}
+
+void QuickGaussianBlur::itemChange(const ItemChange change, const ItemChangeData &value)
+{
+    QQuickItem::itemChange(change, value);
+    if (change == ItemDevicePixelRatioHasChanged) {
+        Q_D(QuickGaussianBlur);
+        d->updateDpr(value.realValue);
+    }
 }

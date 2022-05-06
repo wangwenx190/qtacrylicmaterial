@@ -61,6 +61,9 @@ public:
     [[nodiscard]] bool isCached() const;
     void setCached(const bool value);
 
+protected:
+    void itemChange(const ItemChange change, const ItemChangeData &value) override;
+
 Q_SIGNALS:
     void sourceChanged();
     void radiusChanged();

@@ -54,7 +54,7 @@ public Q_SLOTS:
     void rebuildShaders();
 
 private Q_SLOTS:
-    void updateDpr(const QScreen *screen);
+    void updateDpr(const qreal newDpr);
 
 private:
     void initialize();
@@ -72,7 +72,6 @@ private:
     qreal m_thickness = 0.0;
     qreal m_dpr = 1.0;
     QQuickItem *m_maskSource = nullptr;
-    QMetaObject::Connection m_updateDprConnection = {};
     QScopedPointer<QGfxShaderBuilder> m_shaderBuilder;
     QScopedPointer<QGfxSourceProxy> m_sourceProxy;
     QScopedPointer<QQuickShaderEffect> m_horizontalBlur;

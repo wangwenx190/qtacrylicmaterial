@@ -1,25 +1,23 @@
-find_package(Qt6 REQUIRED COMPONENTS
-    Quick
-)
+set(import_dir_path ${PROJECT_BINARY_DIR}/imports)
 
-qt_add_executable(Demo
-    main.cpp
-)
+find_package(Qt6 REQUIRED COMPONENTS Quick)
+
+qt_add_executable(Demo main.cpp)
 
 if(WIN32)
     enable_language(RC)
-    target_sources(Demo PRIVATE
-        demo.rc demo.manifest
-    )
+    target_sources(Demo PRIVATE demo.rc demo.manifest)
 endif()
+
+set(QML_SOURCES MainWindow.qml)
 
 qt_add_qml_module(Demo
     URI Demo
     VERSION 1.0
-    DEPENDENCIES
-        org.wangwenx190.QtAcrylicMaterial
-    QML_FILES
-        MainWindow.qml
+    IMPORTS QtQuick
+    DEPENDENCIES org.wangwenx190.QtAcrylicMaterial
+    IMPORT_PATH ${import_dir_path}
+    QML_FILES ${QML_SOURCES}
 )
 
 set_target_properties(Demo PROPERTIES
@@ -42,11 +40,10 @@ target_compile_definitions(Demo PRIVATE
     QT_DEPRECATED_WARNINGS
     QT_DISABLE_DEPRECATED_BEFORE=0x060400
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
+    DEMO_IMPORT_DIR="${import_dir_path}"
 )
 
-target_link_libraries(Demo PRIVATE
-    Qt::Quick
-)
+target_link_libraries(Demo PRIVATE Qt::Quick)
 
 if(MSVC)
     target_compile_options(Demo PRIVATE
@@ -57,3 +54,5 @@ else()
         -Wall -Wextra -Werror
     )
 endif()
+
+add_dependencies(Demo qtacrylicmaterialplugin)

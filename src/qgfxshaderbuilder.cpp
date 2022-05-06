@@ -73,6 +73,8 @@
 #  define QT5COMPAT_MAX_BLUR_SAMPLES_GL (8) // minimum number of varyings in the ES 2.0 spec.
 #endif
 
+QT_BEGIN_NAMESPACE
+
 QGfxShaderBuilder::QGfxShaderBuilder(QObject *parent) : QObject(parent)
 {
     QList<QShaderBaker::GeneratedShader> targets = {};
@@ -521,3 +523,7 @@ QUrl QGfxShaderBuilder::buildShader(const QByteArray &code,
 
     return QUrl::fromLocalFile(output->fileName());
 }
+
+QT_END_NAMESPACE
+
+#include "moc_qgfxshaderbuilder_p.cpp"

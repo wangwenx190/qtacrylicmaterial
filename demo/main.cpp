@@ -27,6 +27,8 @@
 
 int main(int argc, char *argv[])
 {
+    qputenv("QSG_INFO", QByteArrayLiteral("1"));
+
     QCoreApplication::setApplicationName(u"QtAcrylicMaterial Demo"_qs);
     QGuiApplication::setApplicationDisplayName(u"QtAcrylicMaterial Demo"_qs);
     QCoreApplication::setApplicationVersion(u"1.0.0.0"_qs);
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
     QGuiApplication application(argc, argv);
 
     QQmlApplicationEngine engine;
-    engine.addImportPath(QCoreApplication::applicationDirPath() + u"/../imports");
+    engine.addImportPath(QString::fromUtf8(DEMO_IMPORT_DIR));
 
     const QUrl mainWindowUrl(u"qrc:///Demo/MainWindow.qml"_qs);
 

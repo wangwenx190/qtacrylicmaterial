@@ -37,6 +37,28 @@ static constexpr const qreal sc_defaultNoiseOpacity = 0.02;
 [[maybe_unused]] static constexpr const QColor sc_defaultExclusionColor = { 255, 255, 255, 26 };
 [[maybe_unused]] static constexpr const qreal sc_defaultSaturation = 1.25;
 
+namespace Preset
+{
+namespace Dark
+{
+static constexpr const QColor sc_defaultTintColor = {44, 44, 44}; // #2C2C2C
+static constexpr const qreal sc_defaultTintOpacity = 0.15;
+static constexpr const qreal sc_defaultLuminosityOpacity = 0.96;
+static constexpr const QColor sc_defaultFallbackColor = {44, 44, 44}; // #2C2C2C
+} // namespace Dark
+namespace Light
+{
+static constexpr const QColor sc_defaultTintColor = {252, 252, 252}; // #FCFCFC
+static constexpr const qreal sc_defaultTintOpacity = 0.0;
+static constexpr const qreal sc_defaultLuminosityOpacity = 0.85;
+static constexpr const QColor sc_defaultFallbackColor = {249, 249, 249}; // #F9F9F9
+} // namespace Light
+namespace HighContrast
+{
+// ### TODO
+} // namespace HighContrast
+} // namespace Preset
+
 static inline void initResource()
 {
     //Q_INIT_RESOURCE(qtacrylicmaterial);
@@ -84,7 +106,9 @@ void QuickAcrylicMaterialPrivate::createBlurredSource()
     Q_Q(QuickAcrylicMaterial);
     m_blurredSource.reset(new QuickGaussianBlur(q));
     m_blurredSource->setRadius(sc_defaultBlurRadius);
-    m_blurredSource->setSamples(int(qRound(sc_defaultBlurRadius * 2.0)));
+    // https://doc.qt.io/qt-5/qml-qtgraphicaleffects-gaussianblur.html#samples-prop
+    // Ideally, the samples value should be twice as large as the highest required radius value plus one.
+    m_blurredSource->setSamples(int(qRound((sc_defaultBlurRadius * 2.0) + 1.0)));
     m_blurredSource->setVisible(false);
     const auto blurredSourceAnchors = new QQuickAnchors(m_blurredSource.get(), m_blurredSource.get());
     blurredSourceAnchors->setFill(q);
@@ -333,16 +357,16 @@ void QuickAcrylicMaterial::setTheme(const Theme value)
     Q_EMIT themeChanged();
     switch (d->m_theme) {
     case Theme::Dark: {
-        setTintColor(QColor(u"#2C2C2C"_qs));
-        setTintOpacity(0.15);
-        setLuminosityOpacity(0.96);
-        setFallbackColor(QColor(u"#2C2C2C"_qs));
+        setTintColor(Preset::Dark::sc_defaultTintColor);
+        setTintOpacity(Preset::Dark::sc_defaultTintOpacity);
+        setLuminosityOpacity(Preset::Dark::sc_defaultLuminosityOpacity);
+        setFallbackColor(Preset::Dark::sc_defaultFallbackColor);
     } break;
     case Theme::Light: {
-        setTintColor(QColor(u"#FCFCFC"_qs));
-        setTintOpacity(0.0);
-        setLuminosityOpacity(0.85);
-        setFallbackColor(QColor(u"#F9F9F9"_qs));
+        setTintColor(Preset::Light::sc_defaultTintColor);
+        setTintOpacity(Preset::Light::sc_defaultTintOpacity);
+        setLuminosityOpacity(Preset::Light::sc_defaultLuminosityOpacity);
+        setFallbackColor(Preset::Light::sc_defaultFallbackColor);
     } break;
     case Theme::HighContrast: {
         // ### TODO
