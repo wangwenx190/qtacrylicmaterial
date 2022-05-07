@@ -24,7 +24,7 @@
 
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
-#include <QtCore/qfileinfo.h>
+#include <QtCore/qmutex.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -32,7 +32,13 @@
 #include <QtQuick/qquickwindow.h>
 #include <QtQuick/qsgsimpletexturenode.h>
 
-Q_GLOBAL_STATIC(QPixmap, g_wallpaperImage)
+struct InternalHelper
+{
+    QMutex mutex;
+    QPixmap pixmap;
+};
+
+Q_GLOBAL_STATIC(InternalHelper, g_helper)
 
 [[nodiscard]] extern QString getWallpaperImageFilePath();
 [[nodiscard]] extern QuickDesktopWallpaper::WallpaperImageAspectStyle getWallpaperImageAspectStyle();
@@ -119,13 +125,14 @@ WallpaperImageNode::~WallpaperImageNode() = default;
 
 void WallpaperImageNode::maybeGenerateWallpaperImageCache()
 {
-    if (!g_wallpaperImage()->isNull()) {
+    QMutexLocker locker(&g_helper()->mutex);
+    if (!g_helper()->pixmap.isNull()) {
         return;
     }
     const QSize desktopSize = (m_item->window() ? m_item->window()->screen()->virtualSize()
                                : QGuiApplication::primaryScreen()->virtualSize());
-    *g_wallpaperImage() = QPixmap(desktopSize);
-    g_wallpaperImage()->fill(QColorConstants::Transparent);
+    g_helper()->pixmap = QPixmap(desktopSize);
+    g_helper()->pixmap.fill(QColorConstants::Transparent);
     QImage image(getWallpaperImageFilePath());
     if (image.isNull()) {
         return;
@@ -160,9 +167,9 @@ void WallpaperImageNode::maybeGenerateWallpaperImageCache()
         const QRect r = alignedRect(Qt::LeftToRight, Qt::AlignCenter, image.size(), desktopRect);
         bufferPainter.drawImage(r.topLeft(), image);
     }
-    QPainter painter(g_wallpaperImage());
+    QPainter painter(&g_helper()->pixmap);
     painter.drawImage(QPoint(0, 0), buffer);
-    m_texture.reset(m_item->window()->createTextureFromImage(g_wallpaperImage()->toImage()));
+    m_texture.reset(m_item->window()->createTextureFromImage(g_helper()->pixmap.toImage()));
     m_node->setTexture(m_texture.get());
 }
 
@@ -241,15 +248,17 @@ void QuickDesktopWallpaper::itemChange(const ItemChange change, const ItemChange
     QQuickItem::itemChange(change, value);
     Q_D(QuickDesktopWallpaper);
     switch (change) {
-    case ItemDevicePixelRatioHasChanged:
-        *g_wallpaperImage() = {};
+    case ItemDevicePixelRatioHasChanged: {
+        g_helper()->mutex.lock();
+        g_helper()->pixmap = {};
+        g_helper()->mutex.unlock();
         update();
-        break;
-    case ItemSceneChange:
+    } break;
+    case ItemSceneChange: {
         if (value.window) {
             d->rebindWindow();
         }
-        break;
+    } break;
     default:
         break;
     }

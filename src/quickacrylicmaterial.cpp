@@ -108,7 +108,7 @@ void QuickAcrylicMaterialPrivate::createBlurredSource()
     m_blurredSource->setRadius(sc_defaultBlurRadius);
     // https://doc.qt.io/qt-5/qml-qtgraphicaleffects-gaussianblur.html#samples-prop
     // Ideally, the samples value should be twice as large as the highest required radius value plus one.
-    m_blurredSource->setSamples(int(qRound(sc_defaultBlurRadius * 2.0)));
+    m_blurredSource->setSamples(int(qRound((sc_defaultBlurRadius * 2.0) + 1.0)));
     m_blurredSource->setVisible(false);
     const auto blurredSourceAnchors = new QQuickAnchors(m_blurredSource.get(), m_blurredSource.get());
     blurredSourceAnchors->setFill(q);
