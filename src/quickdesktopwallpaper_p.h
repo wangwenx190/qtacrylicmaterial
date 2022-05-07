@@ -25,7 +25,8 @@
 #pragma once
 
 #include <QtCore/qobject.h>
-#include "quickdesktopwallpaper.h"
+
+class QuickDesktopWallpaper;
 
 class QuickDesktopWallpaperPrivate : public QObject
 {
@@ -34,8 +35,6 @@ class QuickDesktopWallpaperPrivate : public QObject
     Q_DISABLE_COPY_MOVE(QuickDesktopWallpaperPrivate)
 
 public:
-    using WallpaperImageAspectStyle = QuickDesktopWallpaper::WallpaperImageAspectStyle;
-
     explicit QuickDesktopWallpaperPrivate(QuickDesktopWallpaper *q);
     ~QuickDesktopWallpaperPrivate() override;
 
