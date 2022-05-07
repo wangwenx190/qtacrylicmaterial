@@ -39,7 +39,7 @@ using WallpaperImageAspectStyle = QuickDesktopWallpaper::WallpaperImageAspectSty
 
 [[nodiscard]] WallpaperImageAspectStyle getWallpaperImageAspectStyle()
 {
-    static constexpr const auto defaultStyle = WallpaperImageAspectStyle::KeepRatioByExpanding;
+    static constexpr const auto defaultStyle = WallpaperImageAspectStyle::Fill;
     const QWinRegistryKey desktopSettings(HKEY_CURRENT_USER, uR"(Control Panel\Desktop)");
     if (!desktopSettings.isValid()) {
         return defaultStyle;
@@ -52,14 +52,18 @@ using WallpaperImageAspectStyle = QuickDesktopWallpaper::WallpaperImageAspectSty
     case 0: {
         const QPair<DWORD, bool> tileWallpaper = desktopSettings.dwordValue(u"TileWallpaper");
         if (tileWallpaper.second && (tileWallpaper.first != 0)) {
-            return WallpaperImageAspectStyle::Tiled;
+            return WallpaperImageAspectStyle::Tile;
         }
-        return WallpaperImageAspectStyle::Central;
+        return WallpaperImageAspectStyle::Center;
     }
     case 2:
-        return WallpaperImageAspectStyle::IgnoreRatio;
+        return WallpaperImageAspectStyle::Stretch; // Ignore aspect ratio to fill.
     case 6:
-        return WallpaperImageAspectStyle::KeepRatio;
+        return WallpaperImageAspectStyle::Fit; // Keep aspect ratio to fill, but don't expand/crop.
+    case 10:
+        return WallpaperImageAspectStyle::Fill; // Keep aspect ratio to fill, expand/crop if necessary.
+    case 22:
+        return WallpaperImageAspectStyle::Span; // ???
     default:
         return defaultStyle;
     }

@@ -1,6 +1,6 @@
 set(import_dir_path ${PROJECT_BINARY_DIR}/imports)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Gui Quick)
 
 qt_add_executable(Demo main.cpp)
 
@@ -43,7 +43,7 @@ target_compile_definitions(Demo PRIVATE
     DEMO_IMPORT_DIR="${import_dir_path}"
 )
 
-target_link_libraries(Demo PRIVATE Qt::Quick)
+target_link_libraries(Demo PRIVATE Qt::Gui Qt::Quick)
 
 if(MSVC)
     target_compile_options(Demo PRIVATE

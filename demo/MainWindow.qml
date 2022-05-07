@@ -29,12 +29,13 @@ Window {
     width: 640
     height: 480
     visible: true
+    color: Qt.color("transparent") // We don't need it.
     title: qsTr("QtAcrylicMaterial Demo")
 
     DesktopWallpaper {
         id: wallpaper
         anchors.fill: parent
-        visible: false
+        visible: false // No need to be visible.
     }
 
     AcrylicMaterial {

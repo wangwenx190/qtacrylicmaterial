@@ -109,8 +109,8 @@ void QuickGaussianBlurPrivate::rebuildShaders()
     QQmlEngine engine(this);
     QJSValue params = engine.newObject();
     params.setProperty(u"radius"_qs, m_kernelRadius);
-    // Limit deviation to something very small avoid getting NaN in the shader.
-    params.setProperty(u"deviation"_qs, qMax(0.00001, m_deviation));
+    // Limit deviation to something very small to avoid getting NaN in the shader.
+    params.setProperty(u"deviation"_qs, /*qMax(0.00001, m_deviation)*/m_deviation);
     params.setProperty(u"alphaOnly"_qs, m_alphaOnly);
     params.setProperty(u"masked"_qs, (m_maskSource != nullptr));
     params.setProperty(u"fallback"_qs, !qFuzzyCompare(m_radius, m_kernelRadius));

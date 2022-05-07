@@ -6,7 +6,7 @@ set(PROJECT_URI org.${PROJECT_VENDOR}.${PROJECT_NAME})
 set(PROJECT_IMPORT_DIR ${PROJECT_BINARY_DIR}/imports/org/${PROJECT_VENDOR}/${PROJECT_NAME})
 
 find_package(Qt6 REQUIRED COMPONENTS
-    ShaderTools Qml Quick
+    Gui ShaderTools Quick
 )
 
 qt_add_qml_module(${PROJECT_TARGET}
@@ -50,8 +50,8 @@ target_compile_definitions(${PROJECT_TARGET} PRIVATE
 )
 
 target_link_libraries(${PROJECT_TARGET} PRIVATE
+    Qt::GuiPrivate
     Qt::ShaderToolsPrivate
-    Qt::QmlPrivate
     Qt::QuickPrivate
 )
 

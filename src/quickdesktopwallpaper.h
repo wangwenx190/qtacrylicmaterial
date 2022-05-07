@@ -39,16 +39,21 @@ class QuickDesktopWallpaper : public QQuickItem
 public:
     enum class WallpaperImageAspectStyle
     {
-        Central,
-        Tiled,
-        IgnoreRatio,
-        KeepRatio,
-        KeepRatioByExpanding
+        Fill, // Keep aspect ratio to fill, expand/crop if necessary.
+        Fit, // Keep aspect ratio to fill, but don't expand/crop.
+        Stretch, // Ignore aspect ratio to fill.
+        Tile,
+        Center,
+        Span // ???
     };
     Q_ENUM(WallpaperImageAspectStyle)
 
     explicit QuickDesktopWallpaper(QQuickItem *parent = nullptr);
     ~QuickDesktopWallpaper() override;
+
+protected:
+    void itemChange(const ItemChange change, const ItemChangeData &value) override;
+    [[nodiscard]] QSGNode *updatePaintNode(QSGNode *old, UpdatePaintNodeData *data) override;
 
 private:
     QScopedPointer<QuickDesktopWallpaperPrivate> d_ptr;

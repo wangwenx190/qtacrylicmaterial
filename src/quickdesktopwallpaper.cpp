@@ -25,12 +25,153 @@
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
 #include <QtCore/qfileinfo.h>
+#include <QtGui/qscreen.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpainter.h>
 #include <QtQuick/qquickwindow.h>
-#include <QtQuick/private/qquickimage_p.h>
-#include <QtQuick/private/qquickanchors_p.h>
+#include <QtQuick/qsgsimpletexturenode.h>
+
+Q_GLOBAL_STATIC(QPixmap, g_wallpaperImage)
 
 [[nodiscard]] extern QString getWallpaperImageFilePath();
 [[nodiscard]] extern QuickDesktopWallpaper::WallpaperImageAspectStyle getWallpaperImageAspectStyle();
+
+/*!
+    Transforms an \a alignment of Qt::AlignLeft or Qt::AlignRight
+    without Qt::AlignAbsolute into Qt::AlignLeft or Qt::AlignRight with
+    Qt::AlignAbsolute according to the layout \a direction. The other
+    alignment flags are left untouched.
+
+    If no horizontal alignment was specified, the function returns the
+    default alignment for the given layout \a direction.
+
+    QWidget::layoutDirection
+*/
+[[nodiscard]] static inline Qt::Alignment visualAlignment(const Qt::LayoutDirection direction, const Qt::Alignment alignment)
+{
+    return QGuiApplicationPrivate::visualAlignment(direction, alignment);
+}
+
+/*!
+    Returns a new rectangle of the specified \a size that is aligned to the given \a
+    rectangle according to the specified \a alignment and \a direction.
+ */
+[[nodiscard]] static inline QRect alignedRect(const Qt::LayoutDirection direction, const Qt::Alignment alignment, const QSize &size, const QRect &rectangle)
+{
+    const Qt::Alignment align = visualAlignment(direction, alignment);
+    int x = rectangle.x();
+    int y = rectangle.y();
+    const int w = size.width();
+    const int h = size.height();
+    if ((align & Qt::AlignVCenter) == Qt::AlignVCenter) {
+        y += ((rectangle.size().height() / 2) - (h / 2));
+    } else if ((align & Qt::AlignBottom) == Qt::AlignBottom) {
+        y += (rectangle.size().height() - h);
+    }
+    if ((align & Qt::AlignRight) == Qt::AlignRight) {
+        x += (rectangle.size().width() - w);
+    } else if ((align & Qt::AlignHCenter) == Qt::AlignHCenter) {
+        x += ((rectangle.size().width() / 2) - (w / 2));
+    }
+    return QRect(x, y, w, h);
+}
+
+class WallpaperImageNode : public QObject, public QSGTransformNode
+{
+    Q_OBJECT
+    Q_DISABLE_COPY_MOVE(WallpaperImageNode)
+
+public:
+    explicit WallpaperImageNode(QQuickItem *item);
+    ~WallpaperImageNode() override;
+
+public Q_SLOTS:
+    void maybeGenerateWallpaperImageCache();
+    void maybeUpdateWallpaperImageClipRect();
+
+private:
+    QScopedPointer<QSGTexture> m_texture;
+    QPointer<QQuickItem> m_item = nullptr;
+    QSGSimpleTextureNode *m_node = nullptr;
+
+    using WallpaperImageAspectStyle = QuickDesktopWallpaper::WallpaperImageAspectStyle;
+};
+
+WallpaperImageNode::WallpaperImageNode(QQuickItem *item)
+{
+    Q_ASSERT(item);
+    if (!item) {
+        return;
+    }
+    m_item = item;
+
+    m_node = new QSGSimpleTextureNode;
+    m_node->setFiltering(QSGTexture::Linear);
+    maybeGenerateWallpaperImageCache();
+    maybeUpdateWallpaperImageClipRect();
+    appendChildNode(m_node);
+
+    connect(m_item->window(), &QQuickWindow::beforeRendering, this, &WallpaperImageNode::maybeUpdateWallpaperImageClipRect, Qt::DirectConnection);
+}
+
+WallpaperImageNode::~WallpaperImageNode() = default;
+
+void WallpaperImageNode::maybeGenerateWallpaperImageCache()
+{
+    if (!g_wallpaperImage()->isNull()) {
+        return;
+    }
+    const QSize desktopSize = (m_item->window() ? m_item->window()->screen()->virtualSize()
+                               : QGuiApplication::primaryScreen()->virtualSize());
+    *g_wallpaperImage() = QPixmap(desktopSize);
+    g_wallpaperImage()->fill(QColorConstants::Transparent);
+    QImage image(getWallpaperImageFilePath());
+    if (image.isNull()) {
+        return;
+    }
+    const WallpaperImageAspectStyle aspectStyle = getWallpaperImageAspectStyle();
+    QImage buffer(desktopSize, QImage::Format_ARGB32_Premultiplied);
+#ifdef Q_OS_WINDOWS
+    if (aspectStyle == WallpaperImageAspectStyle::Center) {
+        buffer.fill(QColorConstants::Black);
+    }
+#endif
+    if ((aspectStyle == WallpaperImageAspectStyle::Stretch)
+        || (aspectStyle == WallpaperImageAspectStyle::Fit)
+        || (aspectStyle == WallpaperImageAspectStyle::Fill)) {
+        Qt::AspectRatioMode mode = Qt::KeepAspectRatioByExpanding;
+        if (aspectStyle == WallpaperImageAspectStyle::Stretch) {
+            mode = Qt::IgnoreAspectRatio;
+        } else if (aspectStyle == WallpaperImageAspectStyle::Fit) {
+            mode = Qt::KeepAspectRatio;
+        }
+        QSize newSize = image.size();
+        newSize.scale(desktopSize, mode);
+        image = image.scaled(newSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    }
+    const QRect desktopRect = {QPoint(0, 0), desktopSize};
+    if (aspectStyle == WallpaperImageAspectStyle::Tile) {
+        QPainter bufferPainter(&buffer);
+        const QBrush brush(image);
+        bufferPainter.fillRect(desktopRect, brush);
+    } else {
+        QPainter bufferPainter(&buffer);
+        const QRect r = alignedRect(Qt::LeftToRight, Qt::AlignCenter, image.size(), desktopRect);
+        bufferPainter.drawImage(r.topLeft(), image);
+    }
+    QPainter painter(g_wallpaperImage());
+    painter.drawImage(QPoint(0, 0), buffer);
+    m_texture.reset(m_item->window()->createTextureFromImage(g_wallpaperImage()->toImage()));
+    m_node->setTexture(m_texture.get());
+}
+
+void WallpaperImageNode::maybeUpdateWallpaperImageClipRect()
+{
+    const QSizeF itemSize = m_item->size();
+    m_node->setRect(QRectF(QPointF(0.0, 0.0), itemSize));
+    m_node->setSourceRect(QRectF(m_item->mapToGlobal(QPointF(0.0, 0.0)), itemSize));
+}
 
 QuickDesktopWallpaperPrivate::QuickDesktopWallpaperPrivate(QuickDesktopWallpaper *q) : QObject(q)
 {
@@ -62,98 +203,66 @@ const QuickDesktopWallpaperPrivate *QuickDesktopWallpaperPrivate::get(const Quic
     return pub->d_func();
 }
 
-void QuickDesktopWallpaperPrivate::updateWallpaperSource()
+void QuickDesktopWallpaperPrivate::rebindWindow()
 {
-    const QString filePath = getWallpaperImageFilePath();
-    if (filePath.isEmpty()) {
+    Q_Q(QuickDesktopWallpaper);
+    QQuickWindow * const window = q->window();
+    if (!window) {
         return;
     }
-    const QFileInfo fileInfo(filePath);
-    if (!fileInfo.exists()) {
-        return;
+    if (m_rootWindowXChangedConnection) {
+        disconnect(m_rootWindowXChangedConnection);
+        m_rootWindowXChangedConnection = {};
     }
-    // ### TODO: check is actually a valid bitmap file or not.
-    if (m_wallpaperFilePath == filePath) {
-        return;
+    if (m_rootWindowYChangedConnection) {
+        disconnect(m_rootWindowYChangedConnection);
+        m_rootWindowYChangedConnection = {};
     }
-    m_wallpaperFilePath = filePath;
-    m_wallpaperImage->setSource(QUrl::fromLocalFile(m_wallpaperFilePath));
-    m_wallpaperImage->setSourceSize(QImage(m_wallpaperFilePath).size());
-}
-
-void QuickDesktopWallpaperPrivate::updateWallpaperAspectStyle()
-{
-    const WallpaperImageAspectStyle style = getWallpaperImageAspectStyle();
-    if (m_wallpaperAspectStyle == style) {
-        return;
-    }
-    m_wallpaperAspectStyle = style;
-    switch (m_wallpaperAspectStyle) {
-    case WallpaperImageAspectStyle::Central:
-        m_wallpaperImage->setFillMode(QQuickImage::Pad);
-        break;
-    case WallpaperImageAspectStyle::Tiled:
-        m_wallpaperImage->setFillMode(QQuickImage::Tile);
-        break;
-    case WallpaperImageAspectStyle::IgnoreRatio:
-        m_wallpaperImage->setFillMode(QQuickImage::Stretch);
-        break;
-    case WallpaperImageAspectStyle::KeepRatio:
-        m_wallpaperImage->setFillMode(QQuickImage::PreserveAspectFit);
-        break;
-    case WallpaperImageAspectStyle::KeepRatioByExpanding:
-        m_wallpaperImage->setFillMode(QQuickImage::PreserveAspectCrop);
-        break;
-    }
-}
-
-void QuickDesktopWallpaperPrivate::updateWallpaperClipRect()
-{
-    const QRectF rect = {m_wallpaperImage->mapToGlobal(QPointF(0.0, 0.0)), m_wallpaperImage->size()};
-    if (m_wallpaperClipRect == rect) {
-        return;
-    }
-    m_wallpaperClipRect = rect;
-    m_wallpaperImage->setSourceClipRect(m_wallpaperClipRect);
+    m_rootWindowXChangedConnection = connect(window, &QQuickWindow::xChanged, q, [q](){ q->update(); });
+    m_rootWindowYChangedConnection = connect(window, &QQuickWindow::yChanged, q, [q](){ q->update(); });
 }
 
 void QuickDesktopWallpaperPrivate::initialize()
 {
     Q_Q(QuickDesktopWallpaper);
+    q->setFlag(QuickDesktopWallpaper::ItemHasContents);
     q->setClip(true);
-    m_wallpaperImage.reset(new QQuickImage(q));
-    m_wallpaperImage->setSmooth(true);
-    m_wallpaperImage->setMipmap(true);
-    const auto wallpaperImageAnchors = new QQuickAnchors(m_wallpaperImage.get(), m_wallpaperImage.get());
-    wallpaperImageAnchors->setFill(q);
-
-    connect(q, &QuickDesktopWallpaper::xChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
-    connect(q, &QuickDesktopWallpaper::yChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
-    connect(q, &QuickDesktopWallpaper::widthChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
-    connect(q, &QuickDesktopWallpaper::heightChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
-    connect(q, &QuickDesktopWallpaper::windowChanged, this, [this](QQuickWindow *window){
-        if (m_rootWindowXChangedConnection) {
-            disconnect(m_rootWindowXChangedConnection);
-            m_rootWindowXChangedConnection = {};
-        }
-        if (m_rootWindowYChangedConnection) {
-            disconnect(m_rootWindowYChangedConnection);
-            m_rootWindowYChangedConnection = {};
-        }
-        if (!window) {
-            return;
-        }
-        m_rootWindowXChangedConnection = connect(window, &QQuickWindow::xChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
-        m_rootWindowYChangedConnection = connect(window, &QQuickWindow::yChanged, this, &QuickDesktopWallpaperPrivate::updateWallpaperClipRect);
-    });
-
-    updateWallpaperSource();
-    updateWallpaperAspectStyle();
-    updateWallpaperClipRect();
 }
 
-QuickDesktopWallpaper::QuickDesktopWallpaper(QQuickItem *parent) : QQuickItem(parent), d_ptr(new QuickDesktopWallpaperPrivate(this))
+QuickDesktopWallpaper::QuickDesktopWallpaper(QQuickItem *parent)
+    : QQuickItem(parent), d_ptr(new QuickDesktopWallpaperPrivate(this))
 {
 }
 
 QuickDesktopWallpaper::~QuickDesktopWallpaper() = default;
+
+void QuickDesktopWallpaper::itemChange(const ItemChange change, const ItemChangeData &value)
+{
+    QQuickItem::itemChange(change, value);
+    Q_D(QuickDesktopWallpaper);
+    switch (change) {
+    case ItemDevicePixelRatioHasChanged:
+        *g_wallpaperImage() = {};
+        update();
+        break;
+    case ItemSceneChange:
+        if (value.window) {
+            d->rebindWindow();
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+QSGNode *QuickDesktopWallpaper::updatePaintNode(QSGNode *old, UpdatePaintNodeData *data)
+{
+    Q_UNUSED(data);
+    auto node = static_cast<WallpaperImageNode *>(old);
+    if (!node) {
+        node = new WallpaperImageNode(this);
+    }
+    return node;
+}
+
+#include "quickdesktopwallpaper.moc"

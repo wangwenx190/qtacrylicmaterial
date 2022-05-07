@@ -27,10 +27,6 @@
 #include <QtCore/qobject.h>
 #include "quickdesktopwallpaper.h"
 
-QT_BEGIN_NAMESPACE
-class QQuickImage;
-QT_END_NAMESPACE
-
 class QuickDesktopWallpaperPrivate : public QObject
 {
     Q_OBJECT
@@ -47,19 +43,13 @@ public:
     [[nodiscard]] static const QuickDesktopWallpaperPrivate *get(const QuickDesktopWallpaper *pub);
 
 public Q_SLOTS:
-    void updateWallpaperSource();
-    void updateWallpaperAspectStyle();
-    void updateWallpaperClipRect();
+    void rebindWindow();
 
 private:
     void initialize();
 
 private:
     QuickDesktopWallpaper *q_ptr = nullptr;
-    QString m_wallpaperFilePath = {};
-    WallpaperImageAspectStyle m_wallpaperAspectStyle = WallpaperImageAspectStyle::KeepRatioByExpanding;
-    QRectF m_wallpaperClipRect = {};
-    QScopedPointer<QQuickImage> m_wallpaperImage;
     QMetaObject::Connection m_rootWindowXChangedConnection = {};
     QMetaObject::Connection m_rootWindowYChangedConnection = {};
 };
