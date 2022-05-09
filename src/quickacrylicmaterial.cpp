@@ -32,7 +32,7 @@
 
 static constexpr const QColor sc_defaultTintColor = { 255, 255, 255, 204 };
 static constexpr const qreal sc_defaultTintOpacity = 1.0;
-static constexpr const qreal sc_defaultBlurRadius = 30.0;
+[[maybe_unused]] static constexpr const qreal sc_defaultBlurRadius = 30.0;
 static constexpr const qreal sc_defaultNoiseOpacity = 0.02;
 [[maybe_unused]] static constexpr const QColor sc_defaultExclusionColor = { 255, 255, 255, 26 };
 [[maybe_unused]] static constexpr const qreal sc_defaultSaturation = 1.25;
@@ -105,10 +105,11 @@ void QuickAcrylicMaterialPrivate::createBlurredSource()
 {
     Q_Q(QuickAcrylicMaterial);
     m_blurredSource.reset(new QuickGaussianBlur(q));
-    m_blurredSource->setRadius(sc_defaultBlurRadius);
+    static constexpr const qreal maximumBlurRadius = 60.0;
+    m_blurredSource->setRadius(maximumBlurRadius);
     // https://doc.qt.io/qt-5/qml-qtgraphicaleffects-gaussianblur.html#samples-prop
     // Ideally, the samples value should be twice as large as the highest required radius value plus one.
-    m_blurredSource->setSamples(int(qRound((sc_defaultBlurRadius * 2.0) + 1.0)));
+    m_blurredSource->setSamples(int(qRound(maximumBlurRadius * 2.0)));
     m_blurredSource->setVisible(false);
     const auto blurredSourceAnchors = new QQuickAnchors(m_blurredSource.get(), m_blurredSource.get());
     blurredSourceAnchors->setFill(q);

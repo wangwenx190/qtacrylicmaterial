@@ -466,7 +466,7 @@ QVariantMap QGfxShaderBuilder::gaussianBlur(const QJSValue &parameters)
 
     QByteArray vertexShader = {};
     QByteArray fragmentShader = {};
-    if ((samples > m_maxBlurSamples) || masked || fallback) {
+    if (/*(samples > m_maxBlurSamples)*/false || masked || fallback) {
         fragmentShader = qgfx_fallbackFragmentShader(int(qRound(requestedRadius)), deviation, masked, alphaOnly);
         vertexShader = qgfx_fallbackVertexShader(alphaOnly);
     } else {
