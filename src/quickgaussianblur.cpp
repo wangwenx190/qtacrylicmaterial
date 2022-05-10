@@ -106,7 +106,7 @@ void QuickGaussianBlurPrivate::rebuildShaders()
     m_verticalBlur->setProperty(kThickness, thicknessVar);
     m_verticalBlur->setProperty(kMask, maskVar);
 
-    QQmlEngine engine(this);
+    QQmlEngine engine;
     QJSValue params = engine.newObject();
     params.setProperty(u"radius"_qs, m_kernelRadius);
     // Limit deviation to something very small to avoid getting NaN in the shader.
