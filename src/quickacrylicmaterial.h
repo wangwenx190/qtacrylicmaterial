@@ -75,6 +75,9 @@ public:
     [[nodiscard]] QColor fallbackColor() const;
     void setFallbackColor(const QColor &color);
 
+protected:
+    void itemChange(const ItemChange change, const ItemChangeData &value) override;
+
 Q_SIGNALS:
     void sourceChanged();
     void themeChanged();

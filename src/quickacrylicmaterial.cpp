@@ -32,8 +32,9 @@
 
 static constexpr const QColor sc_defaultTintColor = { 255, 255, 255, 204 };
 static constexpr const qreal sc_defaultTintOpacity = 1.0;
-[[maybe_unused]] static constexpr const qreal sc_defaultBlurRadius = 30.0;
 static constexpr const qreal sc_defaultNoiseOpacity = 0.02;
+static constexpr const QColor sc_defaultFallbackColor = QColorConstants::Black;
+[[maybe_unused]] static constexpr const qreal sc_defaultBlurRadius = 30.0;
 [[maybe_unused]] static constexpr const QColor sc_defaultExclusionColor = { 255, 255, 255, 26 };
 [[maybe_unused]] static constexpr const qreal sc_defaultSaturation = 1.25;
 
@@ -96,9 +97,33 @@ const QuickAcrylicMaterialPrivate *QuickAcrylicMaterialPrivate::get(const QuickA
 
 void QuickAcrylicMaterialPrivate::updateAcrylicAppearance()
 {
+    Q_Q(QuickAcrylicMaterial);
+
     m_luminosityColorEffect->setColor(calculateEffectiveLuminosityColor());
     m_tintColorEffect->setColor(calculateEffectiveTintColor());
     m_noiseBorderEffect->setOpacity(m_noiseOpacity);
+    m_fallbackColorEffect->setColor(m_fallbackColor);
+
+    const bool active = (q->window() ? q->window()->isActive() : false);
+    m_tintBlendEffect->setVisible(active);
+    m_noiseBorderEffect->setVisible(active);
+    m_fallbackColorEffect->setVisible(!active);
+}
+
+void QuickAcrylicMaterialPrivate::rebindWindow()
+{
+    Q_Q(QuickAcrylicMaterial);
+    QQuickWindow * const window = q->window();
+    Q_ASSERT(window);
+    if (!window) {
+        return;
+    }
+    if (m_windowActiveChangeConnection) {
+        disconnect(m_windowActiveChangeConnection);
+        m_windowActiveChangeConnection = {};
+    }
+    m_windowActiveChangeConnection = connect(window, &QQuickWindow::activeChanged,
+                       this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
 }
 
 void QuickAcrylicMaterialPrivate::createBlurredSource()
@@ -158,6 +183,7 @@ void QuickAcrylicMaterialPrivate::createTintBlendEffect()
     m_tintBlendEffect->setMode(QuickBlend::Mode::Color);
     m_tintBlendEffect->setBackground(m_luminosityBlendEffect.get());
     m_tintBlendEffect->setForeground(m_tintColorEffect.get());
+    m_tintBlendEffect->setVisible(false);
     const auto tintBlendEffectAnchors = new QQuickAnchors(m_tintBlendEffect.get(), m_tintBlendEffect.get());
     tintBlendEffectAnchors->setFill(q);
 }
@@ -169,8 +195,21 @@ void QuickAcrylicMaterialPrivate::createNoiseBorderEffect()
     initResource();
     m_noiseBorderEffect->setSource(QUrl(u"qrc:///org/wangwenx190/QtAcrylicMaterial/assets/noise_256x256.png"_qs));
     m_noiseBorderEffect->setFillMode(QQuickImage::Tile);
+    m_noiseBorderEffect->setVisible(false);
     const auto noiseBorderEffectAnchors = new QQuickAnchors(m_noiseBorderEffect.get(), m_noiseBorderEffect.get());
     noiseBorderEffectAnchors->setFill(q);
+}
+
+void QuickAcrylicMaterialPrivate::createFallbackColorEffect()
+{
+    Q_Q(QuickAcrylicMaterial);
+    m_fallbackColorEffect.reset(new QQuickRectangle(q));
+    QQuickPen * const border = m_fallbackColorEffect->border();
+    border->setWidth(0.0);
+    border->setColor(QColorConstants::Transparent);
+    m_fallbackColorEffect->setVisible(false);
+    const auto fallbackColorEffectAnchors = new QQuickAnchors(m_fallbackColorEffect.get(), m_fallbackColorEffect.get());
+    fallbackColorEffectAnchors->setFill(q);
 }
 
 void QuickAcrylicMaterialPrivate::initialize()
@@ -181,10 +220,12 @@ void QuickAcrylicMaterialPrivate::initialize()
     connect(q, &QuickAcrylicMaterial::tintOpacityChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
     connect(q, &QuickAcrylicMaterial::luminosityOpacityChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
     connect(q, &QuickAcrylicMaterial::noiseOpacityChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
+    connect(q, &QuickAcrylicMaterial::fallbackColorChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
 
     m_tintColor = sc_defaultTintColor;
     m_tintOpacity = sc_defaultTintOpacity;
     m_noiseOpacity = sc_defaultNoiseOpacity;
+    m_fallbackColor = sc_defaultFallbackColor;
 
     createBlurredSource();
     createLuminosityColorEffect();
@@ -192,6 +233,7 @@ void QuickAcrylicMaterialPrivate::initialize()
     createTintColorEffect();
     createTintBlendEffect();
     createNoiseBorderEffect();
+    createFallbackColorEffect();
 
     updateAcrylicAppearance();
 }
@@ -466,4 +508,14 @@ void QuickAcrylicMaterial::setFallbackColor(const QColor &color)
     }
     d->m_fallbackColor = color;
     Q_EMIT fallbackColorChanged();
+}
+
+void QuickAcrylicMaterial::itemChange(const ItemChange change, const ItemChangeData &value)
+{
+    QQuickItem::itemChange(change, value);
+    Q_D(QuickAcrylicMaterial);
+    if ((change == ItemSceneChange) && value.window) {
+        d->rebindWindow();
+        d->updateAcrylicAppearance();
+    }
 }

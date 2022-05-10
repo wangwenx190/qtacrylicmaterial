@@ -37,17 +37,6 @@ class QuickDesktopWallpaper : public QQuickItem
     Q_DISABLE_COPY_MOVE(QuickDesktopWallpaper)
 
 public:
-    enum class WallpaperImageAspectStyle
-    {
-        Fill, // Keep aspect ratio to fill, expand/crop if necessary.
-        Fit, // Keep aspect ratio to fill, but don't expand/crop.
-        Stretch, // Ignore aspect ratio to fill.
-        Tile,
-        Center,
-        Span // ???
-    };
-    Q_ENUM(WallpaperImageAspectStyle)
-
     explicit QuickDesktopWallpaper(QQuickItem *parent = nullptr);
     ~QuickDesktopWallpaper() override;
 

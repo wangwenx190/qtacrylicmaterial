@@ -53,6 +53,7 @@ public:
 
 public Q_SLOTS:
     void updateAcrylicAppearance();
+    void rebindWindow();
 
 private:
     void createBlurredSource();
@@ -61,6 +62,7 @@ private:
     void createTintColorEffect();
     void createTintBlendEffect();
     void createNoiseBorderEffect();
+    void createFallbackColorEffect();
     void initialize();
     [[nodiscard]] qreal calculateTintOpacityModifier(const QColor &tintColor) const;
     [[nodiscard]] QColor calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity) const;
@@ -82,4 +84,6 @@ private:
     QScopedPointer<QQuickRectangle> m_tintColorEffect;
     QScopedPointer<QuickBlend> m_tintBlendEffect;
     QScopedPointer<QQuickImage> m_noiseBorderEffect;
+    QScopedPointer<QQuickRectangle> m_fallbackColorEffect;
+    QMetaObject::Connection m_windowActiveChangeConnection = {};
 };

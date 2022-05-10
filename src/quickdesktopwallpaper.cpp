@@ -40,9 +40,6 @@ struct InternalHelper
 
 Q_GLOBAL_STATIC(InternalHelper, g_helper)
 
-[[nodiscard]] extern QString getWallpaperImageFilePath();
-[[nodiscard]] extern QuickDesktopWallpaper::WallpaperImageAspectStyle getWallpaperImageAspectStyle();
-
 /*!
     Transforms an \a alignment of Qt::AlignLeft or Qt::AlignRight
     without Qt::AlignAbsolute into Qt::AlignLeft or Qt::AlignRight with
@@ -95,13 +92,14 @@ public:
 public Q_SLOTS:
     void maybeGenerateWallpaperImageCache();
     void maybeUpdateWallpaperImageClipRect();
+    void forceRegenerateWallpaperImageCache();
 
 private:
     QScopedPointer<QSGTexture> m_texture;
     QPointer<QQuickItem> m_item = nullptr;
     QSGSimpleTextureNode *m_node = nullptr;
 
-    using WallpaperImageAspectStyle = QuickDesktopWallpaper::WallpaperImageAspectStyle;
+    using WallpaperImageAspectStyle = QuickDesktopWallpaperPrivate::WallpaperImageAspectStyle;
 };
 
 WallpaperImageNode::WallpaperImageNode(QQuickItem *item)
@@ -119,6 +117,8 @@ WallpaperImageNode::WallpaperImageNode(QQuickItem *item)
     appendChildNode(m_node);
 
     connect(m_item->window(), &QQuickWindow::beforeRendering, this, &WallpaperImageNode::maybeUpdateWallpaperImageClipRect, Qt::DirectConnection);
+
+    QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification(this);
 }
 
 WallpaperImageNode::~WallpaperImageNode() = default;
@@ -133,11 +133,11 @@ void WallpaperImageNode::maybeGenerateWallpaperImageCache()
                                : QGuiApplication::primaryScreen()->virtualSize());
     g_helper()->pixmap = QPixmap(desktopSize);
     g_helper()->pixmap.fill(QColorConstants::Transparent);
-    QImage image(getWallpaperImageFilePath());
+    QImage image(QuickDesktopWallpaperPrivate::getWallpaperImageFilePath());
     if (image.isNull()) {
         return;
     }
-    const WallpaperImageAspectStyle aspectStyle = getWallpaperImageAspectStyle();
+    const WallpaperImageAspectStyle aspectStyle = QuickDesktopWallpaperPrivate::getWallpaperImageAspectStyle();
     QImage buffer(desktopSize, QImage::Format_ARGB32_Premultiplied);
 #ifdef Q_OS_WINDOWS
     if (aspectStyle == WallpaperImageAspectStyle::Center) {
@@ -178,6 +178,14 @@ void WallpaperImageNode::maybeUpdateWallpaperImageClipRect()
     const QSizeF itemSize = m_item->size();
     m_node->setRect(QRectF(QPointF(0.0, 0.0), itemSize));
     m_node->setSourceRect(QRectF(m_item->mapToGlobal(QPointF(0.0, 0.0)), itemSize));
+}
+
+void WallpaperImageNode::forceRegenerateWallpaperImageCache()
+{
+    g_helper()->mutex.lock();
+    g_helper()->pixmap = {};
+    g_helper()->mutex.unlock();
+    maybeGenerateWallpaperImageCache();
 }
 
 QuickDesktopWallpaperPrivate::QuickDesktopWallpaperPrivate(QuickDesktopWallpaper *q) : QObject(q)
@@ -249,10 +257,7 @@ void QuickDesktopWallpaper::itemChange(const ItemChange change, const ItemChange
     Q_D(QuickDesktopWallpaper);
     switch (change) {
     case ItemDevicePixelRatioHasChanged: {
-        g_helper()->mutex.lock();
-        g_helper()->pixmap = {};
-        g_helper()->mutex.unlock();
-        update();
+        // TODO
     } break;
     case ItemSceneChange: {
         if (value.window) {

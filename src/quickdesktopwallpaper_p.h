@@ -35,11 +35,27 @@ class QuickDesktopWallpaperPrivate : public QObject
     Q_DISABLE_COPY_MOVE(QuickDesktopWallpaperPrivate)
 
 public:
+    enum class WallpaperImageAspectStyle
+    {
+        Fill, // Keep aspect ratio to fill, expand/crop if necessary.
+        Fit, // Keep aspect ratio to fill, but don't expand/crop.
+        Stretch, // Ignore aspect ratio to fill.
+        Tile,
+        Center,
+        Span // ???
+    };
+    Q_ENUM(WallpaperImageAspectStyle)
+
     explicit QuickDesktopWallpaperPrivate(QuickDesktopWallpaper *q);
     ~QuickDesktopWallpaperPrivate() override;
 
     [[nodiscard]] static QuickDesktopWallpaperPrivate *get(QuickDesktopWallpaper *pub);
     [[nodiscard]] static const QuickDesktopWallpaperPrivate *get(const QuickDesktopWallpaper *pub);
+
+    [[nodiscard]] static QString getWallpaperImageFilePath();
+    [[nodiscard]] static WallpaperImageAspectStyle getWallpaperImageAspectStyle();
+
+    static void subscribeWallpaperChangeNotification(QObject *object);
 
 public Q_SLOTS:
     void rebindWindow();

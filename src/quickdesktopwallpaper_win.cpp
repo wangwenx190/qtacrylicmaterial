@@ -23,12 +23,72 @@
  */
 
 #include "quickdesktopwallpaper.h"
+#include "quickdesktopwallpaper_p.h"
+#include <QtCore/qmutex.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qabstractnativeeventfilter.h>
 #include <QtCore/private/qwinregistry_p.h>
 #include <QtCore/qt_windows.h>
 
-using WallpaperImageAspectStyle = QuickDesktopWallpaper::WallpaperImageAspectStyle;
+class Win32EventFilter;
 
-[[nodiscard]] QString getWallpaperImageFilePath()
+struct Win32Helper
+{
+    QMutex mutex;
+    QScopedPointer<Win32EventFilter> eventFilter;
+    QList<QPointer<QObject>> objects = {};
+};
+
+Q_GLOBAL_STATIC(Win32Helper, g_win32Helper)
+
+class Win32EventFilter : public QAbstractNativeEventFilter
+{
+    Q_DISABLE_COPY_MOVE(Win32EventFilter)
+
+public:
+    explicit Win32EventFilter() : QAbstractNativeEventFilter() {}
+    ~Win32EventFilter() override = default;
+
+    [[nodiscard]] bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override
+    {
+        if ((eventType != "windows_generic_MSG"_qba) || !message || !result) {
+            return false;
+        }
+        const auto msg = static_cast<LPMSG>(message);
+        if (!msg->hwnd) {
+            return false;
+        }
+        if ((msg->message == WM_SETTINGCHANGE) && (msg->wParam == SPI_SETDESKWALLPAPER)) {
+            QMutexLocker locker(&g_win32Helper()->mutex);
+            if (!g_win32Helper()->objects.isEmpty()) {
+                for (auto &&object : qAsConst(g_win32Helper()->objects)) {
+                    if (object) {
+                        QMetaObject::invokeMethod(object, "forceRegenerateWallpaperImageCache");
+                    }
+                }
+            }
+        }
+        return false;
+    }
+};
+
+void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification(QObject *object)
+{
+    Q_ASSERT(object);
+    if (!object) {
+        return;
+    }
+    QMutexLocker locker(&g_win32Helper()->mutex);
+    if (!g_win32Helper()->objects.contains(object)) {
+        g_win32Helper()->objects.append(object);
+    }
+    if (g_win32Helper()->eventFilter.isNull()) {
+        g_win32Helper()->eventFilter.reset(new Win32EventFilter);
+        qApp->installNativeEventFilter(g_win32Helper()->eventFilter.get());
+    }
+}
+
+QString QuickDesktopWallpaperPrivate::getWallpaperImageFilePath()
 {
     wchar_t path[MAX_PATH] = {};
     if (SystemParametersInfoW(SPI_GETDESKWALLPAPER, MAX_PATH, path, 0) == FALSE) {
@@ -37,7 +97,7 @@ using WallpaperImageAspectStyle = QuickDesktopWallpaper::WallpaperImageAspectSty
     return QString::fromWCharArray(path);
 }
 
-[[nodiscard]] WallpaperImageAspectStyle getWallpaperImageAspectStyle()
+QuickDesktopWallpaperPrivate::WallpaperImageAspectStyle QuickDesktopWallpaperPrivate::getWallpaperImageAspectStyle()
 {
     static constexpr const auto defaultStyle = WallpaperImageAspectStyle::Fill;
     const QWinRegistryKey desktopSettings(HKEY_CURRENT_USER, uR"(Control Panel\Desktop)");
