@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/org/wangwenx190/QtAcrylicMaterial">
+        <file>assets/noise_256x256.png</file>
+    </qresource>
+</RCC>

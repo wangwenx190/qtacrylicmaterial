@@ -62,7 +62,7 @@ namespace HighContrast
 
 static inline void initResource()
 {
-    //Q_INIT_RESOURCE(qtacrylicmaterial);
+    Q_INIT_RESOURCE(qtacrylicmaterial);
 }
 
 QuickAcrylicMaterialPrivate::QuickAcrylicMaterialPrivate(QuickAcrylicMaterial *q) : QObject(q)

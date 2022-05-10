@@ -43,7 +43,10 @@ target_compile_definitions(Demo PRIVATE
     DEMO_IMPORT_DIR="${import_dir_path}"
 )
 
-target_link_libraries(Demo PRIVATE Qt::Gui Qt::Quick)
+target_link_libraries(Demo PRIVATE
+    Qt::Gui Qt::Quick
+    AcrylicMaterial
+)
 
 if(MSVC)
     target_compile_options(Demo PRIVATE
@@ -54,5 +57,3 @@ else()
         -Wall -Wextra -Werror
     )
 endif()
-
-add_dependencies(Demo qtacrylicmaterialplugin)
