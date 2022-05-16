@@ -24,6 +24,7 @@
 
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
+#include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qabstractnativeeventfilter.h>
@@ -36,7 +37,7 @@ struct Win32Helper
 {
     QMutex mutex;
     QScopedPointer<Win32EventFilter> eventFilter;
-    QList<QPointer<QObject>> objects = {};
+    QList<QPointer<QuickDesktopWallpaper>> items = {};
 };
 
 Q_GLOBAL_STATIC(Win32Helper, g_win32Helper)
@@ -59,11 +60,13 @@ public:
             return false;
         }
         if ((msg->message == WM_SETTINGCHANGE) && (msg->wParam == SPI_SETDESKWALLPAPER)) {
+            qDebug() << "Detected desktop wallpaper change event.";
             QMutexLocker locker(&g_win32Helper()->mutex);
-            if (!g_win32Helper()->objects.isEmpty()) {
-                for (auto &&object : qAsConst(g_win32Helper()->objects)) {
-                    if (object) {
-                        QMetaObject::invokeMethod(object, "forceRegenerateWallpaperImageCache");
+            if (!g_win32Helper()->items.isEmpty()) {
+                for (auto &&item : qAsConst(g_win32Helper()->items)) {
+                    if (item) {
+                        QuickDesktopWallpaperPrivate::get(item)->forceRegenerateWallpaperImageCache();
+                        item->update(); // Force re-paint immediately.
                     }
                 }
             }
@@ -72,15 +75,20 @@ public:
     }
 };
 
-void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification(QObject *object)
+void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification(WallpaperImageNode *node)
 {
-    Q_ASSERT(object);
-    if (!object) {
+    Q_ASSERT(node);
+    if (!node) {
         return;
     }
+    if (m_nodes.contains(node)) {
+        return;
+    }
+    m_nodes.append(node);
+    Q_Q(QuickDesktopWallpaper);
     QMutexLocker locker(&g_win32Helper()->mutex);
-    if (!g_win32Helper()->objects.contains(object)) {
-        g_win32Helper()->objects.append(object);
+    if (!g_win32Helper()->items.contains(q)) {
+        g_win32Helper()->items.append(q);
     }
     if (g_win32Helper()->eventFilter.isNull()) {
         g_win32Helper()->eventFilter.reset(new Win32EventFilter);
@@ -92,6 +100,7 @@ QString QuickDesktopWallpaperPrivate::getWallpaperImageFilePath()
 {
     wchar_t path[MAX_PATH] = {};
     if (SystemParametersInfoW(SPI_GETDESKWALLPAPER, MAX_PATH, path, 0) == FALSE) {
+        qWarning() << "Failed to retrieve the desktop wallpaper file path.";
         return {};
     }
     return QString::fromWCharArray(path);

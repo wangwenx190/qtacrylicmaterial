@@ -45,7 +45,7 @@ target_compile_definitions(Demo PRIVATE
 
 target_link_libraries(Demo PRIVATE
     Qt::Gui Qt::Quick
-    AcrylicMaterial
+    QtAcrylicMaterial
 )
 
 if(MSVC)

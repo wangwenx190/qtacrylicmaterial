@@ -86,7 +86,7 @@ class WallpaperImageNode : public QObject, public QSGTransformNode
     Q_DISABLE_COPY_MOVE(WallpaperImageNode)
 
 public:
-    explicit WallpaperImageNode(QQuickItem *item);
+    explicit WallpaperImageNode(QuickDesktopWallpaper *item);
     ~WallpaperImageNode() override;
 
 public Q_SLOTS:
@@ -96,13 +96,13 @@ public Q_SLOTS:
 
 private:
     QScopedPointer<QSGTexture> m_texture;
-    QPointer<QQuickItem> m_item = nullptr;
+    QPointer<QuickDesktopWallpaper> m_item = nullptr;
     QSGSimpleTextureNode *m_node = nullptr;
 
     using WallpaperImageAspectStyle = QuickDesktopWallpaperPrivate::WallpaperImageAspectStyle;
 };
 
-WallpaperImageNode::WallpaperImageNode(QQuickItem *item)
+WallpaperImageNode::WallpaperImageNode(QuickDesktopWallpaper *item)
 {
     Q_ASSERT(item);
     if (!item) {
@@ -118,7 +118,7 @@ WallpaperImageNode::WallpaperImageNode(QQuickItem *item)
 
     connect(m_item->window(), &QQuickWindow::beforeRendering, this, &WallpaperImageNode::maybeUpdateWallpaperImageClipRect, Qt::DirectConnection);
 
-    QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification(this);
+    QuickDesktopWallpaperPrivate::get(m_item)->subscribeWallpaperChangeNotification(this);
 }
 
 WallpaperImageNode::~WallpaperImageNode() = default;
@@ -237,6 +237,18 @@ void QuickDesktopWallpaperPrivate::rebindWindow()
     m_rootWindowYChangedConnection = connect(window, &QQuickWindow::yChanged, q, [q](){ q->update(); });
 }
 
+void QuickDesktopWallpaperPrivate::forceRegenerateWallpaperImageCache()
+{
+    if (m_nodes.isEmpty()) {
+        return;
+    }
+    for (auto &&node : qAsConst(m_nodes)) {
+        if (node) {
+            node->forceRegenerateWallpaperImageCache();
+        }
+    }
+}
+
 void QuickDesktopWallpaperPrivate::initialize()
 {
     Q_Q(QuickDesktopWallpaper);
@@ -257,7 +269,8 @@ void QuickDesktopWallpaper::itemChange(const ItemChange change, const ItemChange
     Q_D(QuickDesktopWallpaper);
     switch (change) {
     case ItemDevicePixelRatioHasChanged: {
-        // TODO
+        d->forceRegenerateWallpaperImageCache();
+        update(); // Force re-paint immediately.
     } break;
     case ItemSceneChange: {
         if (value.window) {

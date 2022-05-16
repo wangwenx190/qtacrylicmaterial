@@ -27,6 +27,7 @@
 #include <QtCore/qobject.h>
 
 class QuickDesktopWallpaper;
+class WallpaperImageNode;
 
 class QuickDesktopWallpaperPrivate : public QObject
 {
@@ -55,7 +56,8 @@ public:
     [[nodiscard]] static QString getWallpaperImageFilePath();
     [[nodiscard]] static WallpaperImageAspectStyle getWallpaperImageAspectStyle();
 
-    static void subscribeWallpaperChangeNotification(QObject *object);
+    void subscribeWallpaperChangeNotification(WallpaperImageNode *node);
+    void forceRegenerateWallpaperImageCache();
 
 public Q_SLOTS:
     void rebindWindow();
@@ -67,4 +69,5 @@ private:
     QuickDesktopWallpaper *q_ptr = nullptr;
     QMetaObject::Connection m_rootWindowXChangedConnection = {};
     QMetaObject::Connection m_rootWindowYChangedConnection = {};
+    QList<WallpaperImageNode *> m_nodes = {};
 };
