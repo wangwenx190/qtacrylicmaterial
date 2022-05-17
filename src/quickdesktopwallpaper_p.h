@@ -57,6 +57,7 @@ public:
     [[nodiscard]] static WallpaperImageAspectStyle getWallpaperImageAspectStyle();
 
     void subscribeWallpaperChangeNotification(WallpaperImageNode *node);
+    void subscribeWallpaperChangeNotification_platform();
     void forceRegenerateWallpaperImageCache();
 
 public Q_SLOTS:

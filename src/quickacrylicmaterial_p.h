@@ -51,9 +51,14 @@ public:
     [[nodiscard]] static QuickAcrylicMaterialPrivate *get(QuickAcrylicMaterial *pub);
     [[nodiscard]] static const QuickAcrylicMaterialPrivate *get(const QuickAcrylicMaterial *pub);
 
+    void subscribeSystemThemeChangeNotification();
+
 public Q_SLOTS:
     void updateAcrylicAppearance();
     void rebindWindow();
+
+protected:
+    [[nodiscard]] bool eventFilter(QObject *object, QEvent *event) override;
 
 private:
     void createBlurredSource();
@@ -68,6 +73,7 @@ private:
     [[nodiscard]] QColor calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity) const;
     [[nodiscard]] QColor calculateEffectiveTintColor() const;
     [[nodiscard]] QColor calculateEffectiveLuminosityColor() const;
+    [[nodiscard]] bool shouldAppsUseDarkMode() const;
 
 private:
     QuickAcrylicMaterial *q_ptr = nullptr;
@@ -86,4 +92,6 @@ private:
     QScopedPointer<QQuickImage> m_noiseBorderEffect;
     QScopedPointer<QQuickRectangle> m_fallbackColorEffect;
     QMetaObject::Connection m_windowActiveChangeConnection = {};
+    bool m_useSystemTheme = false;
+    bool m_settingSystemTheme = false;
 };

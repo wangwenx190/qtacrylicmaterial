@@ -26,6 +26,8 @@
 #include "quickacrylicmaterial_p.h"
 #include "quickgaussianblur.h"
 #include "quickblend.h"
+#include <QtGui/qpa/qplatformtheme.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtQuick/private/qquickanchors_p.h>
 #include <QtQuick/private/qquickimage_p.h>
 #include <QtQuick/private/qquickrectangle_p.h>
@@ -126,6 +128,29 @@ void QuickAcrylicMaterialPrivate::rebindWindow()
                        this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
 }
 
+bool QuickAcrylicMaterialPrivate::eventFilter(QObject *object, QEvent *event)
+{
+    Q_ASSERT(object);
+    Q_ASSERT(event);
+    if (!object || !event) {
+        return false;
+    }
+    if (!m_useSystemTheme) {
+        return QObject::eventFilter(object, event);
+    }
+    switch (event->type()) {
+    case QEvent::ThemeChange:
+    case QEvent::ApplicationPaletteChange: {
+        qDebug() << "Detected system theme change event.";
+        Q_Q(QuickAcrylicMaterial);
+        q->setTheme(Theme::System);
+    } break;
+    default:
+        break;
+    }
+    return QObject::eventFilter(object, event);
+}
+
 void QuickAcrylicMaterialPrivate::createBlurredSource()
 {
     Q_Q(QuickAcrylicMaterial);
@@ -216,6 +241,7 @@ void QuickAcrylicMaterialPrivate::initialize()
 {
     Q_Q(QuickAcrylicMaterial);
     q->setClip(true);
+
     connect(q, &QuickAcrylicMaterial::tintColorChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
     connect(q, &QuickAcrylicMaterial::tintOpacityChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
     connect(q, &QuickAcrylicMaterial::luminosityOpacityChanged, this, &QuickAcrylicMaterialPrivate::updateAcrylicAppearance);
@@ -236,6 +262,8 @@ void QuickAcrylicMaterialPrivate::initialize()
     createFallbackColorEffect();
 
     updateAcrylicAppearance();
+
+    subscribeSystemThemeChangeNotification();
 }
 
 qreal QuickAcrylicMaterialPrivate::calculateTintOpacityModifier(const QColor &tintColor) const
@@ -357,7 +385,16 @@ QColor QuickAcrylicMaterialPrivate::calculateLuminosityColor(const QColor &tintC
     }
 }
 
-QuickAcrylicMaterial::QuickAcrylicMaterial(QQuickItem *parent) : QQuickItem(parent), d_ptr(new QuickAcrylicMaterialPrivate(this))
+bool QuickAcrylicMaterialPrivate::shouldAppsUseDarkMode() const
+{
+    if (const QPlatformTheme * const theme = QGuiApplicationPrivate::platformTheme()) {
+        return (theme->appearance() == QPlatformTheme::Appearance::Dark);
+    }
+    return false;
+}
+
+QuickAcrylicMaterial::QuickAcrylicMaterial(QQuickItem *parent)
+    : QQuickItem(parent), d_ptr(new QuickAcrylicMaterialPrivate(this))
 {
 }
 
@@ -387,38 +424,62 @@ void QuickAcrylicMaterial::setSource(QQuickItem *item)
 QuickAcrylicMaterial::Theme QuickAcrylicMaterial::theme() const
 {
     Q_D(const QuickAcrylicMaterial);
-    return d->m_theme;
+    return (d->m_useSystemTheme ? Theme::System : d->m_theme);
 }
 
 void QuickAcrylicMaterial::setTheme(const Theme value)
 {
-    Q_D(QuickAcrylicMaterial);
-    if (d->m_theme == value) {
+    Q_ASSERT(value != Theme::Unknown);
+    if (value == Theme::Unknown) {
         return;
     }
-    d->m_theme = value;
-    Q_EMIT themeChanged();
-    switch (d->m_theme) {
+    Q_D(QuickAcrylicMaterial);
+    if (value == Theme::System) {
+        d->m_settingSystemTheme = true;
+    } else {
+        if (d->m_theme == value) {
+            d->m_settingSystemTheme = false;
+            return;
+        }
+        d->m_theme = value;
+        Q_EMIT themeChanged();
+    }
+    switch (value) {
+    case Theme::Unknown:
+        Q_ASSERT(false);
+        break;
     case Theme::Dark: {
+        if (!d->m_settingSystemTheme) {
+            d->m_useSystemTheme = false;
+        }
+        d->m_settingSystemTheme = false;
         setTintColor(Preset::Dark::sc_defaultTintColor);
         setTintOpacity(Preset::Dark::sc_defaultTintOpacity);
         setLuminosityOpacity(Preset::Dark::sc_defaultLuminosityOpacity);
         setFallbackColor(Preset::Dark::sc_defaultFallbackColor);
     } break;
     case Theme::Light: {
+        if (!d->m_settingSystemTheme) {
+            d->m_useSystemTheme = false;
+        }
+        d->m_settingSystemTheme = false;
         setTintColor(Preset::Light::sc_defaultTintColor);
         setTintOpacity(Preset::Light::sc_defaultTintOpacity);
         setLuminosityOpacity(Preset::Light::sc_defaultLuminosityOpacity);
         setFallbackColor(Preset::Light::sc_defaultFallbackColor);
     } break;
     case Theme::HighContrast: {
+        if (!d->m_settingSystemTheme) {
+            d->m_useSystemTheme = false;
+        }
+        d->m_settingSystemTheme = false;
         // ### TODO
     } break;
     case Theme::System: {
-        // ### TODO
+        d->m_settingSystemTheme = true;
+        d->m_useSystemTheme = true;
+        setTheme(d->shouldAppsUseDarkMode() ? Theme::Dark : Theme::Light);
     } break;
-    default:
-        break;
     }
 }
 

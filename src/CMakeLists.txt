@@ -31,6 +31,7 @@ qt_add_qml_module(${PROJECT_TARGET}
 if(WIN32)
     target_sources(${PROJECT_TARGET} PRIVATE
         quickdesktopwallpaper_win.cpp
+        quickacrylicmaterial_win.cpp
     )
 endif()
 

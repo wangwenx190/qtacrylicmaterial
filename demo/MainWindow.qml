@@ -26,11 +26,11 @@ import QtQuick
 import org.wangwenx190.QtAcrylicMaterial
 
 Window {
-    width: 640
-    height: 480
+    width: 800
+    height: 600
     visible: true
     color: Qt.color("transparent") // We don't need it.
-    title: qsTr("QtAcrylicMaterial Demo")
+    title: Application.displayName
 
     DesktopWallpaper {
         id: wallpaper
@@ -41,6 +41,6 @@ Window {
     AcrylicMaterial {
         anchors.fill: parent
         source: wallpaper
-        theme: AcrylicMaterial.Default
+        theme: AcrylicMaterial.System
     }
 }

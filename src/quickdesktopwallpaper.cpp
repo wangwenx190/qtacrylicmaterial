@@ -116,7 +116,7 @@ WallpaperImageNode::WallpaperImageNode(QuickDesktopWallpaper *item)
     maybeUpdateWallpaperImageClipRect();
     appendChildNode(m_node);
 
-    connect(m_item->window(), &QQuickWindow::beforeRendering, this, &WallpaperImageNode::maybeUpdateWallpaperImageClipRect, Qt::DirectConnection);
+    connect(m_item->window(), &QQuickWindow::beforeRendering, this, &WallpaperImageNode::maybeUpdateWallpaperImageClipRect);
 
     QuickDesktopWallpaperPrivate::get(m_item)->subscribeWallpaperChangeNotification(this);
 }
@@ -135,6 +135,7 @@ void WallpaperImageNode::maybeGenerateWallpaperImageCache()
     g_helper()->pixmap.fill(QColorConstants::Transparent);
     QImage image(QuickDesktopWallpaperPrivate::getWallpaperImageFilePath());
     if (image.isNull()) {
+        qWarning() << "The desktop wallpaper image is null.";
         return;
     }
     const WallpaperImageAspectStyle aspectStyle = QuickDesktopWallpaperPrivate::getWallpaperImageAspectStyle();
@@ -247,6 +248,19 @@ void QuickDesktopWallpaperPrivate::forceRegenerateWallpaperImageCache()
             node->forceRegenerateWallpaperImageCache();
         }
     }
+}
+
+void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification(WallpaperImageNode *node)
+{
+    Q_ASSERT(node);
+    if (!node) {
+        return;
+    }
+    if (m_nodes.contains(node)) {
+        return;
+    }
+    m_nodes.append(node);
+    subscribeWallpaperChangeNotification_platform();
 }
 
 void QuickDesktopWallpaperPrivate::initialize()

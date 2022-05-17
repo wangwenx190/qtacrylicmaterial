@@ -26,29 +26,28 @@
 #include "quickdesktopwallpaper_p.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
-#include <QtCore/qcoreapplication.h>
 #include <QtCore/qabstractnativeeventfilter.h>
 #include <QtCore/private/qwinregistry_p.h>
 #include <QtCore/qt_windows.h>
 
-class Win32EventFilter;
+class DesktopWallpaperWin32EventFilter;
 
-struct Win32Helper
+struct DesktopWallpaperWin32Helper
 {
     QMutex mutex;
-    QScopedPointer<Win32EventFilter> eventFilter;
+    QScopedPointer<DesktopWallpaperWin32EventFilter> eventFilter;
     QList<QPointer<QuickDesktopWallpaper>> items = {};
 };
 
-Q_GLOBAL_STATIC(Win32Helper, g_win32Helper)
+Q_GLOBAL_STATIC(DesktopWallpaperWin32Helper, g_desktopWallpaperWin32Helper)
 
-class Win32EventFilter : public QAbstractNativeEventFilter
+class DesktopWallpaperWin32EventFilter : public QAbstractNativeEventFilter
 {
-    Q_DISABLE_COPY_MOVE(Win32EventFilter)
+    Q_DISABLE_COPY_MOVE(DesktopWallpaperWin32EventFilter)
 
 public:
-    explicit Win32EventFilter() : QAbstractNativeEventFilter() {}
-    ~Win32EventFilter() override = default;
+    explicit DesktopWallpaperWin32EventFilter() : QAbstractNativeEventFilter() {}
+    ~DesktopWallpaperWin32EventFilter() override = default;
 
     [[nodiscard]] bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override
     {
@@ -61,9 +60,9 @@ public:
         }
         if ((msg->message == WM_SETTINGCHANGE) && (msg->wParam == SPI_SETDESKWALLPAPER)) {
             qDebug() << "Detected desktop wallpaper change event.";
-            QMutexLocker locker(&g_win32Helper()->mutex);
-            if (!g_win32Helper()->items.isEmpty()) {
-                for (auto &&item : qAsConst(g_win32Helper()->items)) {
+            QMutexLocker locker(&g_desktopWallpaperWin32Helper()->mutex);
+            if (!g_desktopWallpaperWin32Helper()->items.isEmpty()) {
+                for (auto &&item : qAsConst(g_desktopWallpaperWin32Helper()->items)) {
                     if (item) {
                         QuickDesktopWallpaperPrivate::get(item)->forceRegenerateWallpaperImageCache();
                         item->update(); // Force re-paint immediately.
@@ -75,24 +74,16 @@ public:
     }
 };
 
-void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification(WallpaperImageNode *node)
+void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification_platform()
 {
-    Q_ASSERT(node);
-    if (!node) {
-        return;
-    }
-    if (m_nodes.contains(node)) {
-        return;
-    }
-    m_nodes.append(node);
     Q_Q(QuickDesktopWallpaper);
-    QMutexLocker locker(&g_win32Helper()->mutex);
-    if (!g_win32Helper()->items.contains(q)) {
-        g_win32Helper()->items.append(q);
+    QMutexLocker locker(&g_desktopWallpaperWin32Helper()->mutex);
+    if (!g_desktopWallpaperWin32Helper()->items.contains(q)) {
+        g_desktopWallpaperWin32Helper()->items.append(q);
     }
-    if (g_win32Helper()->eventFilter.isNull()) {
-        g_win32Helper()->eventFilter.reset(new Win32EventFilter);
-        qApp->installNativeEventFilter(g_win32Helper()->eventFilter.get());
+    if (g_desktopWallpaperWin32Helper()->eventFilter.isNull()) {
+        g_desktopWallpaperWin32Helper()->eventFilter.reset(new DesktopWallpaperWin32EventFilter);
+        qApp->installNativeEventFilter(g_desktopWallpaperWin32Helper()->eventFilter.get());
     }
 }
 
