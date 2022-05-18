@@ -40,7 +40,7 @@ qt_add_qml_module(Demo
     VERSION 1.0
     IMPORTS QtQuick
     DEPENDENCIES org.wangwenx190.QtAcrylicMaterial
-    IMPORT_PATH ${import_dir_path}
+    #IMPORT_PATH ${import_dir_path}
     QML_FILES ${QML_SOURCES}
 )
 
