@@ -139,9 +139,13 @@ bool QuickAcrylicMaterialPrivate::eventFilter(QObject *object, QEvent *event)
         return QObject::eventFilter(object, event);
     }
     switch (event->type()) {
-    case QEvent::ThemeChange:
+    case QEvent::ThemeChange: {
+        qDebug() << "Detected theme change event.";
+        Q_Q(QuickAcrylicMaterial);
+        q->setTheme(Theme::System);
+    } break;
     case QEvent::ApplicationPaletteChange: {
-        qDebug() << "Detected system theme change event.";
+        qDebug() << "Detected application palette change event.";
         Q_Q(QuickAcrylicMaterial);
         q->setTheme(Theme::System);
     } break;
