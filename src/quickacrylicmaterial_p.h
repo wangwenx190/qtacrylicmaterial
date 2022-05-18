@@ -24,9 +24,10 @@
 
 #pragma once
 
+#include "qtacrylicmaterial_global.h"
+#include "quickacrylicmaterial.h"
 #include <QtCore/qobject.h>
 #include <QtGui/qcolor.h>
-#include "quickacrylicmaterial.h"
 
 QT_BEGIN_NAMESPACE
 class QQuickImage;
@@ -36,7 +37,7 @@ QT_END_NAMESPACE
 class QuickGaussianBlur;
 class QuickBlend;
 
-class QuickAcrylicMaterialPrivate : public QObject
+class QTACRYLICMATERIAL_API QuickAcrylicMaterialPrivate : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PUBLIC(QuickAcrylicMaterial)

@@ -24,10 +24,11 @@
 
 #include <QtGui/qguiapplication.h>
 #include <QtQml/qqmlapplicationengine.h>
+#include <qtacrylicmaterialplugin.h>
 
 int main(int argc, char *argv[])
 {
-    qputenv("QSG_INFO", QByteArrayLiteral("1"));
+    qputenv("QSG_INFO", "1"_qba);
 
     QCoreApplication::setApplicationName(u"QtAcrylicMaterial Demo"_qs);
     QGuiApplication::setApplicationDisplayName(u"QtAcrylicMaterial Demo"_qs);
@@ -41,6 +42,8 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.addImportPath(QString::fromUtf8(DEMO_IMPORT_DIR));
+
+    QtAcrylicMaterial::registerTypes(&engine);
 
     const QUrl mainWindowUrl(u"qrc:///Demo/MainWindow.qml"_qs);
 

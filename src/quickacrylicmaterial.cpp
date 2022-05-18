@@ -400,6 +400,7 @@ bool QuickAcrylicMaterialPrivate::shouldAppsUseDarkMode() const
 QuickAcrylicMaterial::QuickAcrylicMaterial(QQuickItem *parent)
     : QQuickItem(parent), d_ptr(new QuickAcrylicMaterialPrivate(this))
 {
+    qRegisterMetaType<Theme>();
 }
 
 QuickAcrylicMaterial::~QuickAcrylicMaterial() = default;

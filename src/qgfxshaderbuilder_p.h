@@ -40,6 +40,7 @@
 
 #pragma once
 
+#include "qtacrylicmaterial_global.h"
 #include <QtCore/qobject.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qurl.h>
@@ -52,7 +53,7 @@ QT_BEGIN_NAMESPACE
 class QJSValue;
 class QTemporaryFile;
 
-class QGfxShaderBuilder : public QObject
+class QTACRYLICMATERIAL_API QGfxShaderBuilder : public QObject
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(ShaderBuilder)

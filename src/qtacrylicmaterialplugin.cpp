@@ -22,31 +22,23 @@
  * SOFTWARE.
  */
 
-#pragma once
+#include "qtacrylicmaterialplugin.h"
+#include "qgfxshaderbuilder_p.h"
+#include "qgfxsourceproxy_p.h"
+#include "quickdesktopwallpaper.h"
+#include "quickgaussianblur.h"
+#include "quickblend.h"
+#include "quickacrylicmaterial.h"
+#include <QtQml/qqmlengine.h>
 
-#include "qtacrylicmaterial_global.h"
-#include <QtQml/qqmlregistration.h>
-#include <QtQuick/qquickitem.h>
-
-class QuickDesktopWallpaperPrivate;
-
-class QTACRYLICMATERIAL_API QuickDesktopWallpaper : public QQuickItem
+void QtAcrylicMaterial::registerTypes(QQmlEngine *engine)
 {
-    Q_OBJECT
-    QML_NAMED_ELEMENT(DesktopWallpaper)
-    Q_DECLARE_PRIVATE(QuickDesktopWallpaper)
-    Q_DISABLE_COPY_MOVE(QuickDesktopWallpaper)
-
-public:
-    explicit QuickDesktopWallpaper(QQuickItem *parent = nullptr);
-    ~QuickDesktopWallpaper() override;
-
-protected:
-    void itemChange(const ItemChange change, const ItemChangeData &value) override;
-    [[nodiscard]] QSGNode *updatePaintNode(QSGNode *old, UpdatePaintNodeData *data) override;
-
-private:
-    QScopedPointer<QuickDesktopWallpaperPrivate> d_ptr;
-};
-
-QML_DECLARE_TYPE(QuickDesktopWallpaper)
+    Q_UNUSED(engine);
+    qmlRegisterType<QGfxShaderBuilder>(QTACRYLICMATERIAL_QUICK_URI, 1, 0, "ShaderBuilder");
+    qmlRegisterType<QGfxSourceProxy>(QTACRYLICMATERIAL_QUICK_URI, 1, 0, "SourceProxy");
+    qmlRegisterType<QuickDesktopWallpaper>(QTACRYLICMATERIAL_QUICK_URI, 1, 0, "DesktopWallpaper");
+    qmlRegisterType<QuickGaussianBlur>(QTACRYLICMATERIAL_QUICK_URI, 1, 0, "GaussianBlur");
+    qmlRegisterType<QuickBlend>(QTACRYLICMATERIAL_QUICK_URI, 1, 0, "Blend");
+    qmlRegisterType<QuickAcrylicMaterial>(QTACRYLICMATERIAL_QUICK_URI, 1, 0, "AcrylicMaterial");
+    qmlRegisterModule(QTACRYLICMATERIAL_QUICK_URI, 1, 0);
+}

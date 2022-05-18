@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 QGfxSourceProxy::QGfxSourceProxy(QQuickItem *parent) : QQuickItem(parent)
 {
+    qRegisterMetaType<Interpolation>();
 }
 
 QGfxSourceProxy::~QGfxSourceProxy() = default;

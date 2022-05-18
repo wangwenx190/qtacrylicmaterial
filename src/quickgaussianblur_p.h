@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "qtacrylicmaterial_global.h"
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
@@ -37,7 +38,7 @@ class QuickGaussianBlur;
 class QGfxShaderBuilder;
 class QGfxSourceProxy;
 
-class QuickGaussianBlurPrivate : public QObject
+class QTACRYLICMATERIAL_API QuickGaussianBlurPrivate : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PUBLIC(QuickGaussianBlur)

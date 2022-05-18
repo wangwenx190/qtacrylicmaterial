@@ -25,28 +25,14 @@
 #pragma once
 
 #include "qtacrylicmaterial_global.h"
-#include <QtQml/qqmlregistration.h>
-#include <QtQuick/qquickitem.h>
 
-class QuickDesktopWallpaperPrivate;
+QT_BEGIN_NAMESPACE
+class QQmlEngine;
+QT_END_NAMESPACE
 
-class QTACRYLICMATERIAL_API QuickDesktopWallpaper : public QQuickItem
+[[maybe_unused]] static constexpr const char QTACRYLICMATERIAL_QUICK_URI[] = "org.wangwenx190.QtAcrylicMaterial";
+
+namespace QtAcrylicMaterial
 {
-    Q_OBJECT
-    QML_NAMED_ELEMENT(DesktopWallpaper)
-    Q_DECLARE_PRIVATE(QuickDesktopWallpaper)
-    Q_DISABLE_COPY_MOVE(QuickDesktopWallpaper)
-
-public:
-    explicit QuickDesktopWallpaper(QQuickItem *parent = nullptr);
-    ~QuickDesktopWallpaper() override;
-
-protected:
-    void itemChange(const ItemChange change, const ItemChangeData &value) override;
-    [[nodiscard]] QSGNode *updatePaintNode(QSGNode *old, UpdatePaintNodeData *data) override;
-
-private:
-    QScopedPointer<QuickDesktopWallpaperPrivate> d_ptr;
-};
-
-QML_DECLARE_TYPE(QuickDesktopWallpaper)
+QTACRYLICMATERIAL_API void registerTypes(QQmlEngine *engine);
+}

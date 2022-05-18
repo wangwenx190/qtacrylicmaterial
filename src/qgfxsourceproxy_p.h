@@ -40,6 +40,7 @@
 
 #pragma once
 
+#include "qtacrylicmaterial_global.h"
 #include <QtQml/qqmlregistration.h>
 #include <QtQuick/qquickitem.h>
 
@@ -47,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickShaderEffectSource;
 
-class QGfxSourceProxy : public QQuickItem
+class QTACRYLICMATERIAL_API QGfxSourceProxy : public QQuickItem
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(SourceProxy)
@@ -60,10 +61,7 @@ class QGfxSourceProxy : public QQuickItem
     Q_PROPERTY(Interpolation interpolation READ interpolation WRITE setInterpolation NOTIFY interpolationChanged FINAL)
 
 public:
-    enum class Interpolation
-    {
-        Any, Nearest, Linear
-    };
+    enum class Interpolation { Any, Nearest, Linear };
     Q_ENUM(Interpolation)
 
     explicit QGfxSourceProxy(QQuickItem *parent = nullptr);

@@ -195,6 +195,7 @@ QuickDesktopWallpaperPrivate::QuickDesktopWallpaperPrivate(QuickDesktopWallpaper
     if (!q) {
         return;
     }
+    qRegisterMetaType<WallpaperImageAspectStyle>();
     q_ptr = q;
     initialize();
 }

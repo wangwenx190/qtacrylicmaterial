@@ -24,8 +24,9 @@
 
 #pragma once
 
-#include <QtCore/qobject.h>
+#include "qtacrylicmaterial_global.h"
 #include "quickblend.h"
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 class QGfxSourceProxy;
@@ -34,7 +35,7 @@ class QQuickShaderEffectSource;
 class QQuickShaderEffect;
 QT_END_NAMESPACE
 
-class QuickBlendPrivate : public QObject
+class QTACRYLICMATERIAL_API QuickBlendPrivate : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PUBLIC(QuickBlend)

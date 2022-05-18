@@ -24,12 +24,13 @@
 
 #pragma once
 
+#include "qtacrylicmaterial_global.h"
 #include <QtQml/qqmlregistration.h>
 #include <QtQuick/qquickitem.h>
 
 class QuickBlendPrivate;
 
-class QuickBlend : public QQuickItem
+class QTACRYLICMATERIAL_API QuickBlend : public QQuickItem
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(Blend)

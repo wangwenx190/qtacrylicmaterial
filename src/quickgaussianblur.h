@@ -24,12 +24,13 @@
 
 #pragma once
 
+#include "qtacrylicmaterial_global.h"
 #include <QtQml/qqmlregistration.h>
 #include <QtQuick/qquickitem.h>
 
 class QuickGaussianBlurPrivate;
 
-class QuickGaussianBlur : public QQuickItem
+class QTACRYLICMATERIAL_API QuickGaussianBlur : public QQuickItem
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(GaussianBlur)

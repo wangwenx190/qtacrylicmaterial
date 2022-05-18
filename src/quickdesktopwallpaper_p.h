@@ -24,12 +24,13 @@
 
 #pragma once
 
+#include "qtacrylicmaterial_global.h"
 #include <QtCore/qobject.h>
 
 class QuickDesktopWallpaper;
 class WallpaperImageNode;
 
-class QuickDesktopWallpaperPrivate : public QObject
+class QTACRYLICMATERIAL_API QuickDesktopWallpaperPrivate : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PUBLIC(QuickDesktopWallpaper)

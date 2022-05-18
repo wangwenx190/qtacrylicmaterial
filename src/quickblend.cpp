@@ -295,8 +295,10 @@ QByteArray QuickBlendPrivate::generateShaderCode(const Mode mode) const
     return shader;
 }
 
-QuickBlend::QuickBlend(QQuickItem *parent) : QQuickItem(parent), d_ptr(new QuickBlendPrivate(this))
+QuickBlend::QuickBlend(QQuickItem *parent)
+    : QQuickItem(parent), d_ptr(new QuickBlendPrivate(this))
 {
+    qRegisterMetaType<Mode>();
 }
 
 QuickBlend::~QuickBlend() = default;
