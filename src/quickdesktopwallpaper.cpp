@@ -116,7 +116,7 @@ WallpaperImageNode::WallpaperImageNode(QuickDesktopWallpaper *item)
     maybeUpdateWallpaperImageClipRect();
     appendChildNode(m_node);
 
-    connect(m_item->window(), &QQuickWindow::beforeRendering, this, &WallpaperImageNode::maybeUpdateWallpaperImageClipRect);
+    connect(m_item->window(), &QQuickWindow::beforeRendering, this, &WallpaperImageNode::maybeUpdateWallpaperImageClipRect, Qt::DirectConnection);
 
     QuickDesktopWallpaperPrivate::get(m_item)->subscribeWallpaperChangeNotification(this);
 }
