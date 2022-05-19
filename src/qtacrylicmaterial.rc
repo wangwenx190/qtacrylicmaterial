@@ -42,7 +42,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName",      "wangwenx190"
-            VALUE "FileDescription",  "QtAcrylicMaterial"
+            VALUE "FileDescription",  "Cross-platform implementation of Microsoft's Acrylic material."
             VALUE "FileVersion",      "0.0.0.0"
             VALUE "LegalCopyright",   "MIT License"
             #ifdef _DEBUG

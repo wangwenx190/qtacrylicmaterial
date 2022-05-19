@@ -24,7 +24,12 @@
 
 cmake_minimum_required(VERSION 3.23)
 
-project(QtAcrylicMaterial VERSION 1.0.0.0 LANGUAGES CXX)
+project(QtAcrylicMaterial
+    VERSION 1.0.0.0
+    DESCRIPTION "Cross-platform implementation of Microsoft's Acrylic material."
+    HOMEPAGE_URL "https://github.com/wangwenx190/qtacrylicmaterial/"
+    LANGUAGES CXX
+)
 
 option(QTACRYLICMATERIAL_BUILD_DEMO "Build QtAcrylicMaterial demo application." ON)
 option(QTACRYLICMATERIAL_BUILD_STATIC "Build QtAcrylicMaterial as a static library." OFF)
