@@ -67,6 +67,16 @@ if(WIN32)
         quickdesktopwallpaper_win.cpp
         quickacrylicmaterial_win.cpp
     )
+elseif(APPLE)
+    target_sources(${PROJECT_TARGET} PRIVATE
+        quickdesktopwallpaper_mac.mm
+        quickacrylicmaterial_mac.mm
+    )
+elseif(UNIX)
+    target_sources(${PROJECT_TARGET} PRIVATE
+        quickdesktopwallpaper_linux.cpp
+        quickacrylicmaterial_linux.cpp
+    )
 endif()
 
 target_compile_definitions(${PROJECT_TARGET} PRIVATE
