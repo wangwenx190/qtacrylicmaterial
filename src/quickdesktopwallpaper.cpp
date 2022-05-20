@@ -135,8 +135,8 @@ void WallpaperImageNode::maybeGenerateWallpaperImageCache()
     g_helper()->pixmap.fill(QColorConstants::Transparent);
     QImage image(QuickDesktopWallpaperPrivate::getWallpaperImageFilePath());
     if (image.isNull()) {
-        qWarning() << "The desktop wallpaper image is null.";
-        return;
+        qWarning() << "The desktop wallpaper image is null. Filled with solid black color instead.";
+        image.fill(QColorConstants::Black);
     }
     const WallpaperImageAspectStyle aspectStyle = QuickDesktopWallpaperPrivate::getWallpaperImageAspectStyle();
     QImage buffer(desktopSize, QImage::Format_ARGB32_Premultiplied);
