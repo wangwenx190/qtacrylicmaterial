@@ -24,6 +24,7 @@
 
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
+#include <AppKit/AppKit.h>
 
 void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification_platform()
 {
@@ -31,8 +32,30 @@ void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification_platform
 
 QString QuickDesktopWallpaperPrivate::getWallpaperImageFilePath()
 {
+    const NSWorkspace * const sharedWorkspace = [NSWorkspace sharedWorkspace];
+    if (!sharedWorkspace) {
+        qWarning() << "Failed to retrieve the shared workspace.";
+        return {};
+    }
+    NSScreen * const mainScreen = [NSScreen mainScreen];
+    if (!mainScreen) {
+        qWarning() << "Failed to retrieve the main screen.";
+        return {};
+    }
+    const NSURL * const url = [sharedWorkspace desktopImageURLForScreen:mainScreen];
+    if (!url) {
+        qWarning() << "Failed to retrieve the desktop image URL.";
+        return {};
+    }
+    const QUrl path = QUrl::fromNSURL(url);
+    if (!path.isValid()) {
+        qWarning() << "The converted QUrl is not valid.";
+        return {};
+    }
+    return path.toLocalFile();
 }
 
 QuickDesktopWallpaperPrivate::WallpaperImageAspectStyle QuickDesktopWallpaperPrivate::getWallpaperImageAspectStyle()
 {
+    return WallpaperImageAspectStyle::Stretch;
 }
