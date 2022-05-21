@@ -41,7 +41,6 @@ int main(int argc, char *argv[])
     QGuiApplication application(argc, argv);
 
     QQmlApplicationEngine engine;
-    engine.addImportPath(QString::fromUtf8(DEMO_IMPORT_DIR));
 
     QtAcrylicMaterial::registerTypes(&engine);
 

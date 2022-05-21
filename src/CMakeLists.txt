@@ -22,24 +22,17 @@
   SOFTWARE.
 ]]
 
-set(PROJECT_TARGET QtAcrylicMaterial)
-set(PROJECT_CLASS QtAcrylicMaterialPlugin)
-set(PROJECT_VERSION_SHORT ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
-set(PROJECT_VENDOR wangwenx190)
-set(PROJECT_URI org.${PROJECT_VENDOR}.${PROJECT_NAME})
-set(PROJECT_IMPORT_DIR ${PROJECT_BINARY_DIR}/imports/org/${PROJECT_VENDOR}/${PROJECT_NAME})
-
 find_package(Qt6 REQUIRED COMPONENTS
     Gui ShaderTools Quick
 )
 
 if(QTACRYLICMATERIAL_BUILD_STATIC)
-    qt_add_library(${PROJECT_TARGET} STATIC)
+    qt_add_library(${PROJECT_NAME} STATIC)
 else()
-    qt_add_library(${PROJECT_TARGET} SHARED)
+    qt_add_library(${PROJECT_NAME} SHARED)
 endif()
 
-target_sources(${PROJECT_TARGET} PRIVATE
+target_sources(${PROJECT_NAME} PRIVATE
     qtacrylicmaterial.qrc
     qtacrylicmaterial_global.h
     qgfxsourceproxy_p.h qgfxsourceproxy.cpp
@@ -51,35 +44,28 @@ target_sources(${PROJECT_TARGET} PRIVATE
     qtacrylicmaterialplugin.h qtacrylicmaterialplugin.cpp
 )
 
-#[[qt_add_qml_module(${PROJECT_TARGET}
-    URI ${PROJECT_URI}
-    VERSION ${PROJECT_VERSION_SHORT}
-    CLASS_NAME ${PROJECT_CLASS}
-    OUTPUT_DIRECTORY ${PROJECT_IMPORT_DIR}
-)]]
-
 if(WIN32)
     if(NOT QTACRYLICMATERIAL_BUILD_STATIC)
         enable_language(RC)
-        target_sources(${PROJECT_TARGET} PRIVATE qtacrylicmaterial.rc)
+        target_sources(${PROJECT_NAME} PRIVATE qtacrylicmaterial.rc)
     endif()
-    target_sources(${PROJECT_TARGET} PRIVATE
+    target_sources(${PROJECT_NAME} PRIVATE
         quickdesktopwallpaper_win.cpp
         quickacrylicmaterial_win.cpp
     )
 elseif(APPLE)
-    target_sources(${PROJECT_TARGET} PRIVATE
+    target_sources(${PROJECT_NAME} PRIVATE
         quickdesktopwallpaper_mac.mm
         quickacrylicmaterial_mac.mm
     )
 elseif(UNIX)
-    target_sources(${PROJECT_TARGET} PRIVATE
+    target_sources(${PROJECT_NAME} PRIVATE
         quickdesktopwallpaper_linux.cpp
         quickacrylicmaterial_linux.cpp
     )
 endif()
 
-target_compile_definitions(${PROJECT_TARGET} PRIVATE
+target_compile_definitions(${PROJECT_NAME} PRIVATE
     QT_NO_CAST_FROM_ASCII
     QT_NO_CAST_TO_ASCII
     QT_NO_URL_CAST_FROM_STRING
@@ -95,27 +81,27 @@ target_compile_definitions(${PROJECT_TARGET} PRIVATE
 )
 
 if(QTACRYLICMATERIAL_BUILD_STATIC)
-    target_compile_definitions(${PROJECT_TARGET} PUBLIC
+    target_compile_definitions(${PROJECT_NAME} PUBLIC
         QTACRYLICMATERIAL_BUILD_STATIC
     )
 endif()
 
-target_link_libraries(${PROJECT_TARGET} PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt::GuiPrivate
     Qt::ShaderToolsPrivate
     Qt::QuickPrivate
 )
 
-target_include_directories(${PROJECT_TARGET} PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 )
 
 if(MSVC)
-    target_compile_options(${PROJECT_TARGET} PRIVATE
+    target_compile_options(${PROJECT_NAME} PRIVATE
         /utf-8 /W3 /WX
     )
 else()
-    target_compile_options(${PROJECT_TARGET} PRIVATE
+    target_compile_options(${PROJECT_NAME} PRIVATE
         -Wall -Wextra -Werror
     )
 endif()

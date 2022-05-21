@@ -22,8 +22,6 @@
   SOFTWARE.
 ]]
 
-set(import_dir_path ${PROJECT_BINARY_DIR}/imports)
-
 find_package(Qt6 REQUIRED COMPONENTS Gui Quick)
 
 qt_add_executable(Demo main.cpp)
@@ -40,7 +38,6 @@ qt_add_qml_module(Demo
     VERSION 1.0
     IMPORTS QtQuick
     DEPENDENCIES org.wangwenx190.QtAcrylicMaterial
-    #IMPORT_PATH ${import_dir_path}
     QML_FILES ${QML_SOURCES}
 )
 
@@ -64,7 +61,6 @@ target_compile_definitions(Demo PRIVATE
     QT_DEPRECATED_WARNINGS
     QT_DISABLE_DEPRECATED_BEFORE=0x060400
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
-    DEMO_IMPORT_DIR="${import_dir_path}"
 )
 
 target_link_libraries(Demo PRIVATE

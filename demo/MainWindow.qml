@@ -29,7 +29,7 @@ Window {
     width: 800
     height: 600
     visible: true
-    color: Qt.color("transparent") // We don't need it.
+    color: Qt.color("transparent") // We don't need the background at all, so make it transparent.
     title: Application.displayName
 
     DesktopWallpaper {

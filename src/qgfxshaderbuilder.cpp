@@ -62,15 +62,11 @@
 #endif
 
 #ifndef QT5COMPAT_MAX_BLUR_SAMPLES
-#  define QT5COMPAT_MAX_BLUR_SAMPLES (15) // Conservative estimate for maximum varying vectors in
-                                          // shaders (maximum 60 components on some Metal
-                                          // implementations, hence 15 vectors of 4 components each)
-#elif !defined(QT5COMPAT_MAX_BLUR_SAMPLES_GL)
-#  define QT5COMPAT_MAX_BLUR_SAMPLES_GL QT5COMPAT_MAX_BLUR_SAMPLES
+#  define QT5COMPAT_MAX_BLUR_SAMPLES (62)
 #endif
 
-#ifndef QT5COMPAT_MAX_BLUR_SAMPLES_GL
-#  define QT5COMPAT_MAX_BLUR_SAMPLES_GL (8) // minimum number of varyings in the ES 2.0 spec.
+#ifndef QT5COMPAT_MAX_BLUR_SAMPLES_VK
+#  define QT5COMPAT_MAX_BLUR_SAMPLES_VK (32)
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -112,7 +108,7 @@ QGfxShaderBuilder::QGfxShaderBuilder(QObject *parent) : QObject(parent)
         QOpenGLContext context{};
         if (!context.create()) {
             qDebug() << "Failed to acquire GL context to resolve capabilities, using defaults..";
-            m_maxBlurSamples = QT5COMPAT_MAX_BLUR_SAMPLES_GL;
+            m_maxBlurSamples = QT5COMPAT_MAX_BLUR_SAMPLES;
             return;
         }
 
@@ -144,8 +140,13 @@ QGfxShaderBuilder::QGfxShaderBuilder(QObject *parent) : QObject(parent)
             }
         } else {
             qDebug() << "QGfxShaderBuilder: Failed to acquire GL context to resolve capabilities, using defaults.";
-            m_maxBlurSamples = QT5COMPAT_MAX_BLUR_SAMPLES_GL;
+            m_maxBlurSamples = QT5COMPAT_MAX_BLUR_SAMPLES;
         }
+    } else
+#endif
+#if QT_CONFIG(vulkan)
+    if (graphicsApi == QSGRendererInterface::Vulkan) {
+        m_maxBlurSamples = QT5COMPAT_MAX_BLUR_SAMPLES_VK;
     } else
 #endif
     m_maxBlurSamples = QT5COMPAT_MAX_BLUR_SAMPLES;
@@ -466,7 +467,7 @@ QVariantMap QGfxShaderBuilder::gaussianBlur(const QJSValue &parameters)
 
     QByteArray vertexShader = {};
     QByteArray fragmentShader = {};
-    if (/*(samples > m_maxBlurSamples)*/false || masked || fallback) {
+    if ((samples > m_maxBlurSamples) || masked || fallback) {
         fragmentShader = qgfx_fallbackFragmentShader(int(qRound(requestedRadius)), deviation, masked, alphaOnly);
         vertexShader = qgfx_fallbackVertexShader(alphaOnly);
     } else {
