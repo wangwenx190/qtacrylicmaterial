@@ -31,7 +31,7 @@ Note: Please refer to [Qt's own supported platforms](https://doc.qt.io/qt-6/supp
 - The blurred wallpaper has a little latency to catch up with the host window's latest position.
 - The host window's resizing performance will be affected much, especially on some old hardware.
 - The gaussian blur's appearance is not exactly the same with Microsoft's one, not sure why.
-- The power consumption and CPU/memory usage of your application will increase for quite some bit.
+- The CPU & memory usage and power consumption of your application will increase for quite some bit.
 - The host window's overall performance will have some impact in some degree.
 - This library can update the desktop wallpaper automatically, but only on Windows, because I don't know how to detect the corresponding event on Linux and macOS.
 
