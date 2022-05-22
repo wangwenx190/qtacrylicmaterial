@@ -22,6 +22,11 @@
   SOFTWARE.
 ]]
 
+if(UNIX AND NOT APPLE)
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(GTK3 REQUIRED gtk+-3.0)
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS
     Gui ShaderTools Quick
 )
@@ -91,6 +96,18 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt::ShaderToolsPrivate
     Qt::QuickPrivate
 )
+
+if(UNIX AND NOT APPLE)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        GDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_6
+    )
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${GTK3_LIBRARIES}
+    )
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${GTK3_INCLUDE_DIRS}
+    )
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"

@@ -24,6 +24,7 @@
 
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
+#include <gtk/gtk.h>
 
 void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification_platform()
 {
@@ -31,8 +32,36 @@ void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification_platform
 
 QString QuickDesktopWallpaperPrivate::getWallpaperImageFilePath()
 {
+    GConfClient *client = gconf_client_get_default();
+    gchar *rawPath = gconf_client_get_string(client, "/desktop/gnome/background/picture_filename", nullptr);
+    if (!rawPath) {
+        qWarning() << "Failed to retrieve the wallpaper file path.";
+        return {};
+    }
+    return QString::fromUtf8(rawPath);
 }
 
 QuickDesktopWallpaperPrivate::WallpaperImageAspectStyle QuickDesktopWallpaperPrivate::getWallpaperImageAspectStyle()
 {
+    static constexpr const auto defaultAspectStyle = WallpaperImageAspectStyle::Fill;
+    GConfClient *client = gconf_client_get_default();
+    gchar *rawOptions = gconf_client_get_string(client, "/desktop/gnome/background/picture_options", nullptr);
+    if (!rawOptions) {
+        qWarning() << "Failed to retrieve the wallpaper tile options.";
+        return defaultAspectStyle;
+    }
+    const QString options = QString::fromUtf8(rawOptions);
+    if ((options == u"wallpaper"_qs) || (options == u"tiled"_qs)) {
+        return WallpaperImageAspectStyle::Tile;
+    }
+    if (options == u"centered"_qs) {
+        return WallpaperImageAspectStyle::Center;
+    }
+    if (options == u"stretched"_qs) {
+        return WallpaperImageAspectStyle::Stretch;
+    }
+    if (options == u"scaled"_qs) {
+        return WallpaperImageAspectStyle::Fit;
+    }
+    return defaultAspectStyle;
 }
