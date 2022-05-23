@@ -24,21 +24,12 @@
 
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
-#include <QtCore/qmutex.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qpainter.h>
 #include <QtQuick/qquickwindow.h>
 #include <QtQuick/qsgsimpletexturenode.h>
-
-struct InternalHelper
-{
-    QMutex mutex;
-    QPixmap pixmap;
-};
-
-Q_GLOBAL_STATIC(InternalHelper, g_helper)
 
 /*!
     Transforms an \a alignment of Qt::AlignLeft or Qt::AlignRight
@@ -98,6 +89,7 @@ private:
     QScopedPointer<QSGTexture> m_texture;
     QPointer<QuickDesktopWallpaper> m_item = nullptr;
     QSGSimpleTextureNode *m_node = nullptr;
+    QPixmap pixmap = {};
 
     using WallpaperImageAspectStyle = QuickDesktopWallpaperPrivate::WallpaperImageAspectStyle;
 };
@@ -125,14 +117,13 @@ WallpaperImageNode::~WallpaperImageNode() = default;
 
 void WallpaperImageNode::maybeGenerateWallpaperImageCache()
 {
-    QMutexLocker locker(&g_helper()->mutex);
-    if (!g_helper()->pixmap.isNull()) {
+    if (!pixmap.isNull()) {
         return;
     }
     const QSize desktopSize = (m_item->window() ? m_item->window()->screen()->virtualSize()
                                : QGuiApplication::primaryScreen()->virtualSize());
-    g_helper()->pixmap = QPixmap(desktopSize);
-    g_helper()->pixmap.fill(QColorConstants::Transparent);
+    pixmap = QPixmap(desktopSize);
+    pixmap.fill(QColorConstants::Transparent);
     QImage image(QuickDesktopWallpaperPrivate::getWallpaperImageFilePath());
     if (image.isNull()) {
         qWarning() << "The desktop wallpaper image is null. Filled with solid black color instead.";
@@ -168,9 +159,9 @@ void WallpaperImageNode::maybeGenerateWallpaperImageCache()
         const QRect r = alignedRect(Qt::LeftToRight, Qt::AlignCenter, image.size(), desktopRect);
         bufferPainter.drawImage(r.topLeft(), image);
     }
-    QPainter painter(&g_helper()->pixmap);
+    QPainter painter(&pixmap);
     painter.drawImage(QPoint(0, 0), buffer);
-    m_texture.reset(m_item->window()->createTextureFromImage(g_helper()->pixmap.toImage()));
+    m_texture.reset(m_item->window()->createTextureFromImage(pixmap.toImage()));
     m_node->setTexture(m_texture.get());
 }
 
@@ -183,9 +174,7 @@ void WallpaperImageNode::maybeUpdateWallpaperImageClipRect()
 
 void WallpaperImageNode::forceRegenerateWallpaperImageCache()
 {
-    g_helper()->mutex.lock();
-    g_helper()->pixmap = {};
-    g_helper()->mutex.unlock();
+    pixmap = {};
     maybeGenerateWallpaperImageCache();
 }
 
