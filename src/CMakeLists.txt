@@ -36,6 +36,7 @@ if(QTACRYLICMATERIAL_BUILD_STATIC)
 else()
     qt_add_library(${PROJECT_NAME} SHARED)
 endif()
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
     qtacrylicmaterial.qrc
