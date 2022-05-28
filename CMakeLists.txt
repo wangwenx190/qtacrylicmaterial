@@ -33,7 +33,6 @@ project(QtAcrylicMaterial
 
 option(QTACRYLICMATERIAL_BUILD_DEMO "Build QtAcrylicMaterial demo application." ON)
 option(QTACRYLICMATERIAL_BUILD_STATIC "Build QtAcrylicMaterial as a static library." OFF)
-option(QTACRYLICMATERIAL_ZSTD_AVAILABLE "Tell RCC to use ZSTD instead of ZLIB." OFF)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
