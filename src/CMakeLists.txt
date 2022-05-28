@@ -60,8 +60,16 @@ if(WIN32)
         quickacrylicmaterial_win.cpp
     )
 elseif(APPLE)
+    set(_rcc_options -threshold 1)
+    if(QTACRYLICMATERIAL_ZSTD_AVAILABLE)
+        set(_rcc_options ${_rcc_options} -compress-algo zstd -compress 19)
+    else()
+        set(_rcc_options ${_rcc_options} -compress-algo zlib -compress 9)
+    endif()
+    set(_mac_resource)
+    qt_add_big_resources(_mac_resource qtacrylicmaterial_mac.qrc OPTIONS ${_rcc_options})
     target_sources(${PROJECT_NAME} PRIVATE
-        qtacrylicmaterial_mac.qrc
+        ${_mac_resource}
         quickdesktopwallpaper_mac.mm
         quickacrylicmaterial_mac.mm
     )
