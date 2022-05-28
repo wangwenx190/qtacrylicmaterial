@@ -24,6 +24,7 @@
 
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
+#include "quickacrylicmaterial_p.h"
 #include <QtGui/qscreen.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -126,8 +127,8 @@ void WallpaperImageNode::maybeGenerateWallpaperImageCache()
     pixmap.fill(QColorConstants::Transparent);
     QImage image(QuickDesktopWallpaperPrivate::getWallpaperImageFilePath());
     if (image.isNull()) {
-        qWarning() << "The desktop wallpaper image is null. Filled with solid black color instead.";
-        image.fill(QColorConstants::Black);
+        qWarning() << "The desktop wallpaper image is null. Filled with solid color instead.";
+        image.fill(QuickAcrylicMaterialPrivate::shouldAppsUseDarkMode() ? QColorConstants::Black : QColorConstants::White);
     }
     const WallpaperImageAspectStyle aspectStyle = QuickDesktopWallpaperPrivate::getWallpaperImageAspectStyle();
     QImage buffer(desktopSize, QImage::Format_ARGB32_Premultiplied);

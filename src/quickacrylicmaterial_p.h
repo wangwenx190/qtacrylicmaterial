@@ -70,13 +70,16 @@ private:
     void createNoiseBorderEffect();
     void createFallbackColorEffect();
     void initialize();
-    [[nodiscard]] qreal calculateTintOpacityModifier(const QColor &tintColor) const;
-    [[nodiscard]] QColor calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity) const;
-    [[nodiscard]] QColor calculateEffectiveTintColor() const;
-    [[nodiscard]] QColor calculateEffectiveLuminosityColor() const;
-    [[nodiscard]] bool shouldAppsUseDarkMode() const;
+    [[nodiscard]] static qreal calculateTintOpacityModifier(const QColor &tintColor);
+    [[nodiscard]] static QColor calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity);
+    [[nodiscard]] static QColor calculateEffectiveTintColor(const QColor &tintColor, const qreal tintOpacity, const std::optional<qreal> luminosityOpacity);
+    [[nodiscard]] static QColor calculateEffectiveLuminosityColor(const QColor &tintColor, const qreal tintOpacity, const std::optional<qreal> luminosityOpacity);
+    [[nodiscard]] static bool shouldAppsUseDarkMode();
 
 private:
+    friend class WallpaperImageNode;
+    friend class QuickDesktopWallpaperPrivate;
+
     QuickAcrylicMaterial *q_ptr = nullptr;
     QQuickItem *m_source = nullptr;
     Theme m_theme = Theme::Unknown;

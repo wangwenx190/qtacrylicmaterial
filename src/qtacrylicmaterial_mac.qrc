@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/org/wangwenx190/QtAcrylicMaterial">
+        <file>assets/Monterey-Light.jpg</file>
+        <file>assets/Monterey-Dark.jpg</file>
+    </qresource>
+</RCC>

@@ -24,14 +24,22 @@
 
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
+#include "quickacrylicmaterial_p.h"
 #include <AppKit/AppKit.h>
+
+static inline void initResource()
+{
+    Q_INIT_RESOURCE(qtacrylicmaterial_mac);
+}
 
 void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification_platform()
 {
+    // ### TODO
 }
 
 QString QuickDesktopWallpaperPrivate::getWallpaperImageFilePath()
 {
+#if 0
     const NSWorkspace * const sharedWorkspace = [NSWorkspace sharedWorkspace];
     if (!sharedWorkspace) {
         qWarning() << "Failed to retrieve the shared workspace.";
@@ -53,6 +61,11 @@ QString QuickDesktopWallpaperPrivate::getWallpaperImageFilePath()
         return {};
     }
     return path.toLocalFile();
+#else
+    initResource();
+    const QString theme = (QuickAcrylicMaterialPrivate::shouldAppsUseDarkMode() ? u"Dark"_qs : u"Light"_qs);
+    return (u":/org/wangwenx190/QtAcrylicMaterial/assets/Monterey-%1.jpg"_qs).arg(theme);
+#endif
 }
 
 QuickDesktopWallpaperPrivate::WallpaperImageAspectStyle QuickDesktopWallpaperPrivate::getWallpaperImageAspectStyle()

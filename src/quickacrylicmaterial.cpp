@@ -101,8 +101,8 @@ void QuickAcrylicMaterialPrivate::updateAcrylicAppearance()
 {
     Q_Q(QuickAcrylicMaterial);
 
-    m_luminosityColorEffect->setColor(calculateEffectiveLuminosityColor());
-    m_tintColorEffect->setColor(calculateEffectiveTintColor());
+    m_luminosityColorEffect->setColor(calculateEffectiveLuminosityColor(m_tintColor, m_tintOpacity, m_luminosityOpacity));
+    m_tintColorEffect->setColor(calculateEffectiveTintColor(m_tintColor, m_tintOpacity, m_luminosityOpacity));
     m_noiseBorderEffect->setOpacity(m_noiseOpacity);
     m_fallbackColorEffect->setColor(m_fallbackColor);
 
@@ -271,7 +271,7 @@ void QuickAcrylicMaterialPrivate::initialize()
     subscribeSystemThemeChangeNotification();
 }
 
-qreal QuickAcrylicMaterialPrivate::calculateTintOpacityModifier(const QColor &tintColor) const
+qreal QuickAcrylicMaterialPrivate::calculateTintOpacityModifier(const QColor &tintColor)
 {
     // This method supresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by
     // compressing the range of allowable values - for example, a user-defined value of 100% will be mapped to 45% for pure
@@ -322,37 +322,33 @@ qreal QuickAcrylicMaterialPrivate::calculateTintOpacityModifier(const QColor &ti
     return opacityModifier;
 }
 
-QColor QuickAcrylicMaterialPrivate::calculateEffectiveTintColor() const
+QColor QuickAcrylicMaterialPrivate::calculateEffectiveTintColor(const QColor &tintColor, const qreal tintOpacity, const std::optional<qreal> luminosityOpacity)
 {
-    QColor tintColor = m_tintColor;
-    const qreal tintOpacity = m_tintOpacity;
+    QColor color = tintColor;
 
     // Update tint color's alpha with the combined opacity value.
     // If luminosity opacity was specified, we don't intervene into users parameters.
-    if (m_luminosityOpacity.has_value()) {
-        tintColor.setAlphaF(tintColor.alphaF() * tintOpacity);
+    if (luminosityOpacity.has_value()) {
+        color.setAlphaF(color.alphaF() * tintOpacity);
     } else {
-        const qreal tintOpacityModifier = calculateTintOpacityModifier(tintColor);
-        tintColor.setAlphaF(tintColor.alphaF() * tintOpacity * tintOpacityModifier);
+        const qreal tintOpacityModifier = calculateTintOpacityModifier(color);
+        color.setAlphaF(color.alphaF() * tintOpacity * tintOpacityModifier);
     }
 
-    return tintColor;
+    return color;
 }
 
-QColor QuickAcrylicMaterialPrivate::calculateEffectiveLuminosityColor() const
+QColor QuickAcrylicMaterialPrivate::calculateEffectiveLuminosityColor(const QColor &tintColor, const qreal tintOpacity, const std::optional<qreal> luminosityOpacity)
 {
-    QColor tintColor = m_tintColor;
-    const qreal tintOpacity = m_tintOpacity;
+    QColor color = tintColor;
 
     // Purposely leaving out tint opacity modifier here because calculateLuminosityColor() needs the *original* tint opacity set by the user.
-    tintColor.setAlphaF(tintColor.alphaF() * tintOpacity);
+    color.setAlphaF(color.alphaF() * tintOpacity);
 
-    const std::optional<qreal> luminosityOpacity = m_luminosityOpacity;
-
-    return calculateLuminosityColor(tintColor, luminosityOpacity);
+    return calculateLuminosityColor(color, luminosityOpacity);
 }
 
-QColor QuickAcrylicMaterialPrivate::calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity) const
+QColor QuickAcrylicMaterialPrivate::calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity)
 {
     // The tint color passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
     const QColor rgbTintColor = tintColor.toRgb();
@@ -390,7 +386,7 @@ QColor QuickAcrylicMaterialPrivate::calculateLuminosityColor(const QColor &tintC
     }
 }
 
-bool QuickAcrylicMaterialPrivate::shouldAppsUseDarkMode() const
+bool QuickAcrylicMaterialPrivate::shouldAppsUseDarkMode()
 {
     if (const QPlatformTheme * const theme = QGuiApplicationPrivate::platformTheme()) {
         return (theme->appearance() == QPlatformTheme::Appearance::Dark);

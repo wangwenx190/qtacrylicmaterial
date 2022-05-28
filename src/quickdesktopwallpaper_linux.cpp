@@ -28,6 +28,7 @@
 
 void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification_platform()
 {
+    // ### TODO
 }
 
 QString QuickDesktopWallpaperPrivate::getWallpaperImageFilePath()

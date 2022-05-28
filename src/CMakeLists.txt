@@ -61,6 +61,7 @@ if(WIN32)
     )
 elseif(APPLE)
     target_sources(${PROJECT_NAME} PRIVATE
+        qtacrylicmaterial_mac.qrc
         quickdesktopwallpaper_mac.mm
         quickacrylicmaterial_mac.mm
     )
