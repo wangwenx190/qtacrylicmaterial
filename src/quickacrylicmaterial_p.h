@@ -54,6 +54,12 @@ public:
 
     void subscribeSystemThemeChangeNotification();
 
+    [[nodiscard]] static qreal calculateTintOpacityModifier(const QColor &tintColor);
+    [[nodiscard]] static QColor calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity);
+    [[nodiscard]] static QColor calculateEffectiveTintColor(const QColor &tintColor, const qreal tintOpacity, const std::optional<qreal> luminosityOpacity);
+    [[nodiscard]] static QColor calculateEffectiveLuminosityColor(const QColor &tintColor, const qreal tintOpacity, const std::optional<qreal> luminosityOpacity);
+    [[nodiscard]] static bool shouldAppsUseDarkMode();
+
 public Q_SLOTS:
     void updateAcrylicAppearance();
     void rebindWindow();
@@ -70,16 +76,8 @@ private:
     void createNoiseBorderEffect();
     void createFallbackColorEffect();
     void initialize();
-    [[nodiscard]] static qreal calculateTintOpacityModifier(const QColor &tintColor);
-    [[nodiscard]] static QColor calculateLuminosityColor(const QColor &tintColor, const std::optional<qreal> luminosityOpacity);
-    [[nodiscard]] static QColor calculateEffectiveTintColor(const QColor &tintColor, const qreal tintOpacity, const std::optional<qreal> luminosityOpacity);
-    [[nodiscard]] static QColor calculateEffectiveLuminosityColor(const QColor &tintColor, const qreal tintOpacity, const std::optional<qreal> luminosityOpacity);
-    [[nodiscard]] static bool shouldAppsUseDarkMode();
 
 private:
-    friend class WallpaperImageNode;
-    friend class QuickDesktopWallpaperPrivate;
-
     QuickAcrylicMaterial *q_ptr = nullptr;
     QQuickItem *m_source = nullptr;
     Theme m_theme = Theme::Unknown;
