@@ -48,7 +48,7 @@ class QTACRYLICMATERIAL_API QuickAcrylicMaterial : public QQuickItem
 public:
     enum class Theme
     {
-        Unknown = -1, Dark, Light, HighContrast, System, Default = Dark
+        Unknown = -1, Dark, Light, HighContrast, System, Custom, Default = Dark
     };
     Q_ENUM(Theme)
 

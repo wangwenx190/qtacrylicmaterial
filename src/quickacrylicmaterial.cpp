@@ -138,19 +138,22 @@ bool QuickAcrylicMaterialPrivate::eventFilter(QObject *object, QEvent *event)
     if (!m_useSystemTheme) {
         return QObject::eventFilter(object, event);
     }
+    bool shouldUpdate = false;
     switch (event->type()) {
     case QEvent::ThemeChange: {
         qDebug() << "Detected theme change event.";
-        Q_Q(QuickAcrylicMaterial);
-        q->setTheme(Theme::System);
+        shouldUpdate = true;
     } break;
     case QEvent::ApplicationPaletteChange: {
         qDebug() << "Detected application palette change event.";
-        Q_Q(QuickAcrylicMaterial);
-        q->setTheme(Theme::System);
+        shouldUpdate = true;
     } break;
     default:
         break;
+    }
+    if (shouldUpdate) {
+        Q_Q(QuickAcrylicMaterial);
+        q->setTheme(Theme::System);
     }
     return QObject::eventFilter(object, event);
 }
@@ -482,6 +485,10 @@ void QuickAcrylicMaterial::setTheme(const Theme value)
         d->m_useSystemTheme = true;
         setTheme(d->shouldAppsUseDarkMode() ? Theme::Dark : Theme::Light);
     } break;
+    case Theme::Custom: {
+        d->m_settingSystemTheme = false;
+        d->m_useSystemTheme = false;
+    } break;
     }
 }
 
@@ -498,7 +505,7 @@ void QuickAcrylicMaterial::setTintColor(const QColor &color)
         return;
     }
     Q_D(QuickAcrylicMaterial);
-    if (d->m_tintColor == color) {
+    if (d->m_useSystemTheme || (d->m_tintColor == color)) {
         return;
     }
     d->m_tintColor = color;
@@ -514,7 +521,7 @@ qreal QuickAcrylicMaterial::tintOpacity() const
 void QuickAcrylicMaterial::setTintOpacity(const qreal opacity)
 {
     Q_D(QuickAcrylicMaterial);
-    if (qFuzzyCompare(d->m_tintOpacity, opacity)) {
+    if (d->m_useSystemTheme || qFuzzyCompare(d->m_tintOpacity, opacity)) {
         return;
     }
     d->m_tintOpacity = opacity;
@@ -530,7 +537,8 @@ qreal QuickAcrylicMaterial::luminosityOpacity() const
 void QuickAcrylicMaterial::setLuminosityOpacity(const qreal opacity)
 {
     Q_D(QuickAcrylicMaterial);
-    if (d->m_luminosityOpacity.has_value() && qFuzzyCompare(d->m_luminosityOpacity.value(), opacity)) {
+    if (d->m_useSystemTheme || (d->m_luminosityOpacity.has_value()
+        && qFuzzyCompare(d->m_luminosityOpacity.value(), opacity))) {
         return;
     }
     d->m_luminosityOpacity = opacity;
@@ -546,7 +554,7 @@ qreal QuickAcrylicMaterial::noiseOpacity() const
 void QuickAcrylicMaterial::setNoiseOpacity(const qreal opacity)
 {
     Q_D(QuickAcrylicMaterial);
-    if (qFuzzyCompare(d->m_noiseOpacity, opacity)) {
+    if (d->m_useSystemTheme || qFuzzyCompare(d->m_noiseOpacity, opacity)) {
         return;
     }
     d->m_noiseOpacity = opacity;
@@ -566,7 +574,7 @@ void QuickAcrylicMaterial::setFallbackColor(const QColor &color)
         return;
     }
     Q_D(QuickAcrylicMaterial);
-    if (d->m_fallbackColor == color) {
+    if (d->m_useSystemTheme || (d->m_fallbackColor == color)) {
         return;
     }
     d->m_fallbackColor = color;
