@@ -96,4 +96,5 @@ private:
     QMetaObject::Connection m_windowActiveChangeConnection = {};
     bool m_useSystemTheme = false;
     bool m_settingSystemTheme = false;
+    bool m_forceChangeProperty = false;
 };

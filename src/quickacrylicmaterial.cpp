@@ -458,27 +458,33 @@ void QuickAcrylicMaterial::setTheme(const Theme value)
             d->m_useSystemTheme = false;
         }
         d->m_settingSystemTheme = false;
+        d->m_forceChangeProperty = true;
         setTintColor(Preset::Dark::sc_defaultTintColor);
         setTintOpacity(Preset::Dark::sc_defaultTintOpacity);
         setLuminosityOpacity(Preset::Dark::sc_defaultLuminosityOpacity);
         setFallbackColor(Preset::Dark::sc_defaultFallbackColor);
+        d->m_forceChangeProperty = false;
     } break;
     case Theme::Light: {
         if (!d->m_settingSystemTheme) {
             d->m_useSystemTheme = false;
         }
         d->m_settingSystemTheme = false;
+        d->m_forceChangeProperty = true;
         setTintColor(Preset::Light::sc_defaultTintColor);
         setTintOpacity(Preset::Light::sc_defaultTintOpacity);
         setLuminosityOpacity(Preset::Light::sc_defaultLuminosityOpacity);
         setFallbackColor(Preset::Light::sc_defaultFallbackColor);
+        d->m_forceChangeProperty = false;
     } break;
     case Theme::HighContrast: {
         if (!d->m_settingSystemTheme) {
             d->m_useSystemTheme = false;
         }
         d->m_settingSystemTheme = false;
+        d->m_forceChangeProperty = true;
         // ### TODO
+        d->m_forceChangeProperty = false;
     } break;
     case Theme::System: {
         d->m_settingSystemTheme = true;
@@ -505,7 +511,8 @@ void QuickAcrylicMaterial::setTintColor(const QColor &color)
         return;
     }
     Q_D(QuickAcrylicMaterial);
-    if (d->m_useSystemTheme || (d->m_tintColor == color)) {
+    if ((d->m_useSystemTheme && !d->m_forceChangeProperty)
+        || (d->m_tintColor == color)) {
         return;
     }
     d->m_tintColor = color;
@@ -521,7 +528,8 @@ qreal QuickAcrylicMaterial::tintOpacity() const
 void QuickAcrylicMaterial::setTintOpacity(const qreal opacity)
 {
     Q_D(QuickAcrylicMaterial);
-    if (d->m_useSystemTheme || qFuzzyCompare(d->m_tintOpacity, opacity)) {
+    if ((d->m_useSystemTheme && !d->m_forceChangeProperty)
+        || qFuzzyCompare(d->m_tintOpacity, opacity)) {
         return;
     }
     d->m_tintOpacity = opacity;
@@ -537,7 +545,8 @@ qreal QuickAcrylicMaterial::luminosityOpacity() const
 void QuickAcrylicMaterial::setLuminosityOpacity(const qreal opacity)
 {
     Q_D(QuickAcrylicMaterial);
-    if (d->m_useSystemTheme || (d->m_luminosityOpacity.has_value()
+    if ((d->m_useSystemTheme && !d->m_forceChangeProperty)
+        || (d->m_luminosityOpacity.has_value()
         && qFuzzyCompare(d->m_luminosityOpacity.value(), opacity))) {
         return;
     }
@@ -554,7 +563,8 @@ qreal QuickAcrylicMaterial::noiseOpacity() const
 void QuickAcrylicMaterial::setNoiseOpacity(const qreal opacity)
 {
     Q_D(QuickAcrylicMaterial);
-    if (d->m_useSystemTheme || qFuzzyCompare(d->m_noiseOpacity, opacity)) {
+    if ((d->m_useSystemTheme && !d->m_forceChangeProperty)
+        || qFuzzyCompare(d->m_noiseOpacity, opacity)) {
         return;
     }
     d->m_noiseOpacity = opacity;
@@ -574,7 +584,8 @@ void QuickAcrylicMaterial::setFallbackColor(const QColor &color)
         return;
     }
     Q_D(QuickAcrylicMaterial);
-    if (d->m_useSystemTheme || (d->m_fallbackColor == color)) {
+    if ((d->m_useSystemTheme && !d->m_forceChangeProperty)
+        || (d->m_fallbackColor == color)) {
         return;
     }
     d->m_fallbackColor = color;
@@ -588,8 +599,6 @@ void QuickAcrylicMaterial::itemChange(const ItemChange change, const ItemChangeD
     if ((change == ItemSceneChange) && value.window) {
         d->rebindWindow();
         d->updateAcrylicAppearance();
-#ifndef Q_OS_WINDOWS
         value.window->installEventFilter(d);
-#endif
     }
 }
