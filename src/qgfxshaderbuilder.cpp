@@ -127,11 +127,11 @@ QGfxShaderBuilder::QGfxShaderBuilder(QObject *parent) : QObject(parent)
             } else if (context.format().majorVersion() >= 3) {
                 int components = 0;
                 gl->glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &components);
-                m_maxBlurSamples = int(qRound(qreal(components) / 2.0));
+                m_maxBlurSamples = qRound(qreal(components) / 2.0);
             } else {
                 int floats = 0;
                 gl->glGetIntegerv(GL_MAX_VARYING_FLOATS, &floats);
-                m_maxBlurSamples = int(qRound(qreal(floats) / 2.0));
+                m_maxBlurSamples = qRound(qreal(floats) / 2.0);
             }
             if (oldContext && oldSurface) {
                 oldContext->makeCurrent(oldSurface);
@@ -459,8 +459,8 @@ QVariantMap QGfxShaderBuilder::gaussianBlur(const QJSValue &parameters)
     const bool alphaOnly = parameters.property(u"alphaOnly"_qs).toBool();
 
     const qreal requestedSamples = ((requestedRadius * 2.0) + 1.0);
-    const auto samples = int(qRound(1.0 + (requestedSamples / 2.0)));
-    const auto radius = int(qRound(requestedSamples / 4.0));
+    const auto samples = qRound(1.0 + (requestedSamples / 2.0));
+    const auto radius = qRound(requestedSamples / 4.0);
     const bool fallback = parameters.property(u"fallback"_qs).toBool();
 
     QVariantMap result = {};
@@ -468,7 +468,7 @@ QVariantMap QGfxShaderBuilder::gaussianBlur(const QJSValue &parameters)
     QByteArray vertexShader = {};
     QByteArray fragmentShader = {};
     if ((samples > m_maxBlurSamples) || masked || fallback) {
-        fragmentShader = qgfx_fallbackFragmentShader(int(qRound(requestedRadius)), deviation, masked, alphaOnly);
+        fragmentShader = qgfx_fallbackFragmentShader(qRound(requestedRadius), deviation, masked, alphaOnly);
         vertexShader = qgfx_fallbackVertexShader(alphaOnly);
     } else {
         QVarLengthArray<QGfxGaussSample, 64> p(samples);

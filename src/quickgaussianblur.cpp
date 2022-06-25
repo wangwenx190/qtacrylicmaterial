@@ -83,7 +83,7 @@ void QuickGaussianBlurPrivate::rebuildShaders()
 
     m_deviation = ((m_radius + 1.0) / 3.3333);
     m_kernelRadius = qMax(0.0, (qreal(m_samples) / 2.0));
-    m_kernelSize = int(qRound((m_kernelRadius * 2.0) + 1.0));
+    m_kernelSize = qRound((m_kernelRadius * 2.0) + 1.0);
 
     const QVariant spreadVar = (m_radius / m_kernelRadius);
     const QVariant deviationVar = m_deviation;
