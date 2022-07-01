@@ -23,6 +23,7 @@
  */
 
 import QtQuick
+import QtQuick.Controls.Basic
 import org.wangwenx190.QtAcrylicMaterial
 
 Window {

@@ -38,6 +38,22 @@ else()
 endif()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
+set(_import_dir ${PROJECT_BINARY_DIR}/imports)
+if(${QTACRYLICMATERIAL_IMPORT_DIR})
+    set(_import_dir ${QTACRYLICMATERIAL_IMPORT_DIR})
+endif()
+string(APPEND _import_dir /org/wangwenx190/${PROJECT_NAME})
+
+qt_add_qml_module(${PROJECT_NAME}
+    URI org.wangwenx190.${PROJECT_NAME}
+    VERSION 1.0
+    OUTPUT_DIRECTORY ${_import_dir}
+    IMPORTS
+        QtQml
+        QtQuick
+        QtQuick.Controls.Basic
+)
+
 target_sources(${PROJECT_NAME} PRIVATE
     qtacrylicmaterial.qrc
     qtacrylicmaterial_global.h
@@ -82,7 +98,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     QT_NO_FOREACH
     QT_USE_QSTRINGBUILDER
     QT_DEPRECATED_WARNINGS
-    QT_DISABLE_DEPRECATED_BEFORE=0x060400
+    QT_DISABLE_DEPRECATED_BEFORE=0x060500
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
     QTACRYLICMATERIAL_BUILD_LIBRARY
 )
@@ -117,7 +133,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
-        /utf-8 /W3 /WX
+        /utf-8 /W4 # /WX
     )
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE

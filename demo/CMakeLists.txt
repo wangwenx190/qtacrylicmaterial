@@ -22,7 +22,7 @@
   SOFTWARE.
 ]]
 
-find_package(Qt6 REQUIRED COMPONENTS Gui Quick)
+find_package(Qt6 REQUIRED COMPONENTS Gui Qml Quick QuickControls2)
 
 qt_add_executable(Demo main.cpp)
 
@@ -31,14 +31,17 @@ if(WIN32)
     target_sources(Demo PRIVATE demo.rc demo.manifest)
 endif()
 
-set(QML_SOURCES MainWindow.qml)
-
 qt_add_qml_module(Demo
     URI Demo
     VERSION 1.0
-    IMPORTS QtQuick
-    DEPENDENCIES org.wangwenx190.QtAcrylicMaterial
-    QML_FILES ${QML_SOURCES}
+    IMPORTS
+        QtQml
+        QtQuick
+        QtQuick.Controls.Basic
+        org.wangwenx190.QtAcrylicMaterial
+    QML_FILES MainWindow.qml
+    IMPORT_PATH ${PROJECT_BINARY_DIR}/imports
+    ENABLE_TYPE_COMPILER
 )
 
 set_target_properties(Demo PROPERTIES
@@ -53,24 +56,24 @@ target_compile_definitions(Demo PRIVATE
     QT_NO_CAST_FROM_ASCII
     QT_NO_CAST_TO_ASCII
     QT_NO_URL_CAST_FROM_STRING
-    QT_NO_CAST_FROM_BYTEARRAY
-    QT_NO_KEYWORDS
+    #QT_NO_CAST_FROM_BYTEARRAY
+    #QT_NO_KEYWORDS
     QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
     QT_NO_FOREACH
     QT_USE_QSTRINGBUILDER
     QT_DEPRECATED_WARNINGS
-    QT_DISABLE_DEPRECATED_BEFORE=0x060400
+    QT_DISABLE_DEPRECATED_BEFORE=0x060500
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
 )
 
 target_link_libraries(Demo PRIVATE
-    Qt::Gui Qt::Quick
+    Qt::Gui Qt::QmlPrivate Qt::QuickPrivate Qt::QuickControls2Private
     QtAcrylicMaterial::QtAcrylicMaterial
 )
 
 if(MSVC)
     target_compile_options(Demo PRIVATE
-        /utf-8 /W4 /WX
+        /utf-8 /W4 # /WX
     )
 else()
     target_compile_options(Demo PRIVATE
