@@ -29,7 +29,6 @@ ui_*.h
 *.jsc
 Makefile*
 *build-*
-*.qm
 *.prl
 
 # Qt unit tests
@@ -50,3 +49,36 @@ compile_commands.json
 
 # QtCreator local machine specific files for imported projects
 *creator.user*
+
+# My
+[Bb]in/
+[Bb]in64/
+[Bb]uild*/
+*.7z
+*.zip
+*.rar
+*.tar
+*.gz
+*.xz
+*.exe
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.obj
+build.user.bat
+build.user.sh
+user.conf
+[Dd]oc/
+[Dd]ocs/
+Thumbs.db
+*.rc
+*.qm
+*.bin
+*.run
+.qmake.conf
+*.res
+.DS_Store
+.vscode/
+.vs/
+.cmake.conf
