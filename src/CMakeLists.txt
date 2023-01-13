@@ -61,8 +61,8 @@ qt_add_qml_module(${PROJECT_NAME}
 )
 
 list(APPEND QML_DIRS "/usr/lib64/qt6/qml")
-list(APPEND QML_DIRS "${PROJECT_SOURCE_DIR}/src")
-#list(APPEND QML_DIRS /org/wangwenx190/${PROJECT_NAME})
+#TODO check QML output directory
+#list(APPEND QML_DIRS "${PROJECT_SOURCE_DIR}/src")
 list(REMOVE_DUPLICATES QML_DIRS)
 set(QML_IMPORT_PATH "${QML_DIRS}" CACHE STRING "Add QML imports" FORCE)
 set(QML_IMPORT_TRACE true)
