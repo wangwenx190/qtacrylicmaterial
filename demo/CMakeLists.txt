@@ -22,6 +22,9 @@
   SOFTWARE.
 ]]
 
+set(CMAKE_AUTOMOC true)
+cmake_minimum_required(VERSION 3.24)
+
 find_package(Qt6 REQUIRED COMPONENTS Gui Qml Quick QuickControls2)
 
 qt_add_executable(Demo main.cpp)

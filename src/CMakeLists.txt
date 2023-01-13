@@ -22,9 +22,15 @@
   SOFTWARE.
 ]]
 
+set(CMAKE_AUTOMOC true)
+cmake_minimum_required(VERSION 3.24)
+
+
 if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_search_module(GTK3 REQUIRED gtk+-3.0)
+    pkg_search_module(GLIB2 REQUIRED glib-2.0)
+    pkg_search_module(GCONF2 REQUIRED gconf-2.0)
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS
@@ -53,6 +59,13 @@ qt_add_qml_module(${PROJECT_NAME}
         QtQuick
         QtQuick.Controls.Basic
 )
+
+list(APPEND QML_DIRS "/usr/lib64/qt6/qml")
+list(APPEND QML_DIRS "${PROJECT_SOURCE_DIR}/src")
+#list(APPEND QML_DIRS /org/wangwenx190/${PROJECT_NAME})
+list(REMOVE_DUPLICATES QML_DIRS)
+set(QML_IMPORT_PATH "${QML_DIRS}" CACHE STRING "Add QML imports" FORCE)
+set(QML_IMPORT_TRACE true)
 
 target_sources(${PROJECT_NAME} PRIVATE
     qtacrylicmaterial.qrc
@@ -125,6 +138,18 @@ if(UNIX AND NOT APPLE)
     target_include_directories(${PROJECT_NAME} PRIVATE
         ${GTK3_INCLUDE_DIRS}
     )
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${GLIB2_LIBRARIES}
+    )
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${GLIB2_INCLUDE_DIRS}
+    )
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${GCONF2_LIBRARIES}
+    )
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${GCONF2_INCLUDE_DIRS}
+    )
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -137,6 +162,6 @@ if(MSVC)
     )
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wall -Wextra -Werror
+        -Wall -Wextra
     )
 endif()

@@ -31,7 +31,7 @@ project(QtAcrylicMaterial
     LANGUAGES CXX
 )
 
-option(QTACRYLICMATERIAL_BUILD_DEMO "Build QtAcrylicMaterial demo application." ON)
+option(QTACRYLI/usr/lib64/qt/qmlCMATERIAL_BUILD_DEMO "Build QtAcrylicMaterial demo application." ON)
 option(QTACRYLICMATERIAL_BUILD_STATIC "Build QtAcrylicMaterial as a static library." OFF)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
