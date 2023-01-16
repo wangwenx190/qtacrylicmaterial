@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#define QT_NO_KEYWORDS
+#undef signal
 
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"

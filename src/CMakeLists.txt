@@ -22,10 +22,6 @@
   SOFTWARE.
 ]]
 
-set(CMAKE_AUTOMOC true)
-cmake_minimum_required(VERSION 3.24)
-
-
 if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_search_module(GTK3 REQUIRED gtk+-3.0)
@@ -59,13 +55,6 @@ qt_add_qml_module(${PROJECT_NAME}
         QtQuick
         QtQuick.Controls.Basic
 )
-
-list(APPEND QML_DIRS "/usr/lib64/qt6/qml")
-#TODO check QML output directory
-#list(APPEND QML_DIRS "${PROJECT_SOURCE_DIR}/src")
-list(REMOVE_DUPLICATES QML_DIRS)
-set(QML_IMPORT_PATH "${QML_DIRS}" CACHE STRING "Add QML imports" FORCE)
-set(QML_IMPORT_TRACE true)
 
 target_sources(${PROJECT_NAME} PRIVATE
     qtacrylicmaterial.qrc
@@ -116,6 +105,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     QTACRYLICMATERIAL_BUILD_LIBRARY
 )
 
+if (UNIX)
+	set_source_files_properties(quickdesktopwallpaper_linux.cpp PROPERTIES COMPILE_FLAGS "-DQT_NO_KEYWORDS -Wno-deprecated-declarations")
+endif()
+
 if(QTACRYLICMATERIAL_BUILD_STATIC)
     target_compile_definitions(${PROJECT_NAME} PUBLIC
         QTACRYLICMATERIAL_BUILD_STATIC
@@ -162,6 +155,6 @@ if(MSVC)
     )
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wall -Wextra
+        -Wall -Wextra -Werror
     )
 endif()
