@@ -31,6 +31,10 @@ if(WIN32)
     target_sources(Demo PRIVATE demo.rc demo.manifest)
 endif()
 
+set(QML_SRC_FILES
+    MainWindow.qml
+)
+
 qt_add_qml_module(Demo
     URI Demo
     VERSION 1.0
@@ -39,9 +43,13 @@ qt_add_qml_module(Demo
         QtQuick
         QtQuick.Controls.Basic
         org.wangwenx190.QtAcrylicMaterial
-    QML_FILES MainWindow.qml
+    QML_FILES ${QML_SRC_FILES}
     IMPORT_PATH ${PROJECT_BINARY_DIR}/imports
     ENABLE_TYPE_COMPILER
+)
+
+qt6_target_compile_qml_to_cpp(Demo
+    QML_FILES ${QML_SRC_FILES}
 )
 
 set_target_properties(Demo PROPERTIES
