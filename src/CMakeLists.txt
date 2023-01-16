@@ -25,6 +25,8 @@
 if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_search_module(GTK3 REQUIRED gtk+-3.0)
+    pkg_search_module(GLIB2 REQUIRED glib-2.0)
+    pkg_search_module(GCONF2 REQUIRED gconf-2.0)
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS
@@ -103,6 +105,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     QTACRYLICMATERIAL_BUILD_LIBRARY
 )
 
+if (UNIX)
+	set_source_files_properties(quickdesktopwallpaper_linux.cpp PROPERTIES COMPILE_FLAGS "-DQT_NO_KEYWORDS -Wno-deprecated-declarations")
+endif()
+
 if(QTACRYLICMATERIAL_BUILD_STATIC)
     target_compile_definitions(${PROJECT_NAME} PUBLIC
         QTACRYLICMATERIAL_BUILD_STATIC
@@ -124,6 +130,18 @@ if(UNIX AND NOT APPLE)
     )
     target_include_directories(${PROJECT_NAME} PRIVATE
         ${GTK3_INCLUDE_DIRS}
+    )
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${GLIB2_LIBRARIES}
+    )
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${GLIB2_INCLUDE_DIRS}
+    )
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${GCONF2_LIBRARIES}
+    )
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${GCONF2_INCLUDE_DIRS}
     )
 endif()
 

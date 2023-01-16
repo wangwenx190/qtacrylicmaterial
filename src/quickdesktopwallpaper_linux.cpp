@@ -22,9 +22,13 @@
  * SOFTWARE.
  */
 
+#undef signal
+
 #include "quickdesktopwallpaper.h"
 #include "quickdesktopwallpaper_p.h"
 #include <gtk/gtk.h>
+#include <glib.h>
+#include <gconf/gconf-client.h>
 
 void QuickDesktopWallpaperPrivate::subscribeWallpaperChangeNotification_platform()
 {
